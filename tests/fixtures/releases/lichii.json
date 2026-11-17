@@ -1,0 +1,168 @@
+[
+ {
+  "tag_name": "build-316",
+  "name": "Lichii nx2 build 316 (5a66c89)",
+  "body": "## Changes since build 228\n\nBuilt from nx2 at 5a66c8959f, the release candidate testers have been running (run 316). Build 228 was be1f4d9c84. That's 141 merged changes, 60 of them from community contributors.\n\n### Big points\n- **Nextendo online play (opt-in).** Lichii can now play online through the Nextendo Network. It's off until you turn it on: Configure \u2192 Network \u2192 Play online through Nextend",
+  "published_at": "2026-11-16T22:25:08Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/zortos293/Lichii/releases/tag/build-316",
+  "assets": [
+   {
+    "name": "lichii-linux-aarch64-pgo.AppImage",
+    "size": 137751048,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-aarch64-pgo.AppImage",
+    "digest": "sha256:ac00f4e855edc30f5974e2bd1959c970a61a01aee333510fa3525d0910c23465"
+   },
+   {
+    "name": "lichii-linux-aarch64-pgo.tar.gz",
+    "size": 148700640,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-aarch64-pgo.tar.gz",
+    "digest": "sha256:1dca77eb729b205b36e9093257797432875237f88f0e6f6cbf187e4d0a559994"
+   },
+   {
+    "name": "lichii-linux-aarch64.AppImage",
+    "size": 109378056,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-aarch64.AppImage",
+    "digest": "sha256:011d246c736b7dd6419da4cb73d1e35883946742c25fc0455dfa18e8ea7e337b"
+   },
+   {
+    "name": "lichii-linux-aarch64.tar.gz",
+    "size": 118621431,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-aarch64.tar.gz",
+    "digest": "sha256:0fc2137f4f867dbc1f818f5a883dfc481a0c4b7ef0d6cb207d45fa3780a0418d"
+   },
+   {
+    "name": "lichii-linux-x86_64-pgo.AppImage",
+    "size": 157764088,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-x86_64-pgo.AppImage",
+    "digest": "sha256:835daa49775bbd16ce57956f38a972d83a75afbec5ecae2413802938af543567"
+   },
+   {
+    "name": "lichii-linux-x86_64-pgo.tar.gz",
+    "size": 169440465,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-x86_64-pgo.tar.gz",
+    "digest": "sha256:123b904654e488f87bbfb38c35be884260344e67067973a72b42548496a91579"
+   },
+   {
+    "name": "lichii-linux-x86_64.AppImage",
+    "size": 128543224,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-x86_64.AppImage",
+    "digest": "sha256:0c905dc25710894605883619d88fb915f2da03a4c26ae85e3a1b2b724d638b5e"
+   },
+   {
+    "name": "lichii-linux-x86_64.tar.gz",
+    "size": 138225656,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-linux-x86_64.tar.gz",
+    "digest": "sha256:425eb8fd9cf4174f079a048af454e692c12b10269d9f174e2598dc8108ebb342"
+   },
+   {
+    "name": "lichii-macos-arm64.dmg",
+    "size": 90259795,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-macos-arm64.dmg",
+    "digest": "sha256:dadd5d979298ce53e9de856efda48d53c7189b405551dafb2f52283b025e0390"
+   },
+   {
+    "name": "lichii-macos-arm64.zip",
+    "size": 80894070,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-macos-arm64.zip",
+    "digest": "sha256:916e96bd3a10509680e57870618348b7a75a7cad49f22e8359bef5a4c9376661"
+   },
+   {
+    "name": "lichii-windows-x86_64-pgo.zip",
+    "size": 93441184,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-windows-x86_64-pgo.zip",
+    "digest": "sha256:d662a8e4552ea84231ada5b13db8aef3c0acd423e67b6c12448c61957a59dfb4"
+   },
+   {
+    "name": "lichii-windows-x86_64.zip",
+    "size": 91853417,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-316/lichii-windows-x86_64.zip",
+    "digest": "sha256:97da179a4b8e8060c2fdc2a322f201bab1ea9477a455fa55ed466f8b9852e71e"
+   }
+  ]
+ },
+ {
+  "tag_name": "build-228",
+  "name": "Lichii nx2 build 228 (be1f4d9)",
+  "body": "## Changes since build 177\n\nBuilt from nx2 9fbffe253b plus 11 pull requests that merged into nx2 after it (the test/all-in-one-3 branch at be1f4d9c84). Build 177 was 87d84d513c. That's 152 merged changes, 69 of them from community contributors.\n\n> **The first launch of each game after updating takes longer.** A lot of shader code changed in this release, so caches are partly rebuilt once: the comp",
+  "published_at": "2026-11-15T11:32:20Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/zortos293/Lichii/releases/tag/build-228",
+  "assets": [
+   {
+    "name": "lichii-linux-aarch64-pgo.AppImage",
+    "size": 137456136,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-aarch64-pgo.AppImage",
+    "digest": "sha256:b7efc40d45c2aebc4ce6e07663c8a18d3ef91b38abd0168ba6bbb1047d578df5"
+   },
+   {
+    "name": "lichii-linux-aarch64-pgo.tar.gz",
+    "size": 148364872,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-aarch64-pgo.tar.gz",
+    "digest": "sha256:15e7da667cff99d7e1aa09b3b5fa9f4fc834eeb3a0ea20ae838932e2a57e0b34"
+   },
+   {
+    "name": "lichii-linux-aarch64.AppImage",
+    "size": 108861960,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-aarch64.AppImage",
+    "digest": "sha256:0ec4f2833bdfd68c80d414740a21c1e03bca34c2f0ca4327ceedaa65c9965732"
+   },
+   {
+    "name": "lichii-linux-aarch64.tar.gz",
+    "size": 118026617,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-aarch64.tar.gz",
+    "digest": "sha256:7b9088448f85ee46418199eb036029e014d0f368d42904bfb6394491d74d98f6"
+   },
+   {
+    "name": "lichii-linux-x86_64-pgo.AppImage",
+    "size": 157415928,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-x86_64-pgo.AppImage",
+    "digest": "sha256:0061036e686bc05377b45ddfbc69af71fc2df4a8017c3fd2af0d664e15ce703a"
+   },
+   {
+    "name": "lichii-linux-x86_64-pgo.tar.gz",
+    "size": 169070350,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-x86_64-pgo.tar.gz",
+    "digest": "sha256:6133ab2ef558f3325f4c364a0c2ff8b19510c145d8012d960e1f2c322c9c08ca"
+   },
+   {
+    "name": "lichii-linux-x86_64.AppImage",
+    "size": 128027128,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-x86_64.AppImage",
+    "digest": "sha256:be124f449d75a7d8929feb45de8774bcf7819d25a47161ca357de5311e6ff08c"
+   },
+   {
+    "name": "lichii-linux-x86_64.tar.gz",
+    "size": 137739492,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-linux-x86_64.tar.gz",
+    "digest": "sha256:28e9aca510fdad13d42592f5bb84ff6e4c1f5f3406352c56d73a6915e9c722e3"
+   },
+   {
+    "name": "lichii-macos-arm64.dmg",
+    "size": 89077074,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-macos-arm64.dmg",
+    "digest": "sha256:35be0701c628c764b83fe31e0ff42a23c2fd6d95d71165a9a18f00d96b8ef669"
+   },
+   {
+    "name": "lichii-macos-arm64.zip",
+    "size": 80430970,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-macos-arm64.zip",
+    "digest": "sha256:1826cf41a0c0f759416b921d11eef55493d163cac086d4957e052504e73ce25e"
+   },
+   {
+    "name": "lichii-windows-x86_64-pgo.zip",
+    "size": 92867729,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-windows-x86_64-pgo.zip",
+    "digest": "sha256:0f57a7f6a40944e155c2bde12aed536e69c4903afa41bd8ebe2744ab8128ac04"
+   },
+   {
+    "name": "lichii-windows-x86_64.zip",
+    "size": 91338999,
+    "browser_download_url": "https://github.com/zortos293/Lichii/releases/download/build-228/lichii-windows-x86_64.zip",
+    "digest": "sha256:156b48bbfd4bba2dfb7291c63413a682b2b07ccdc5f44e815f4c4098228e2c4a"
+   }
+  ]
+ }
+]

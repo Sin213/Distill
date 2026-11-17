@@ -59,7 +59,13 @@ class ManifestTests(Isolated):
         self.assertEqual(len({e.id for e in cat}), len(cat))
         for e in cat:
             self.assertTrue(e.name and e.system, e.id)
-            self.assertTrue(e.repo or e.adapter, e.id)
+            # Every entry points somewhere its builds come from, except one that has been superseded or discontinued: those
+            # point at nothing on purpose, so nothing can be downloaded under their name (their repository may redirect to
+            # the project that took over, which is the one thing that must never happen).
+            self.assertTrue(e.repo or e.adapter or e.status in em.LEGACY_STATUSES, e.id)
+            if e.status in em.LEGACY_STATUSES:
+                self.assertFalse(e.repo, f"{e.id}: a {e.status} entry must not name a repository")
+                self.assertTrue(len(e.notes) > 80, f"{e.id}: say what happened")
             if e.repo and e.source == "github":
                 self.assertRegex(e.repo, r"^[\w.-]+/[\w.-]+$", e.id)
             self.assertIn(e.version_from, ("tag", "published_at", "asset"))
@@ -135,8 +141,14 @@ class ManifestTests(Isolated):
                             self.assertIn("trusted owner KytyPS5", entry.notes)
 
     def test_bundled_linux_install_kinds_are_unpinned_and_available(self):
+        # Every entry that installs on Linux through something other than a plain download (Flatpak, a source build,
+        # Wine) must not carry a trusted_owner: the owner pin cannot be checked for those, so a pinned entry would be
+        # refused outright. The set grew when the audit's corrections gave the Linux builds of retroarch, pcsx2,
+        # melonds, mgba, flycast and blastem a Flathub app of their own.
         entries = [e for e in em.load_catalog([em.bundled_manifest()], "linux") if e.flatpak or e.build or e.wine]
-        self.assertEqual({e.id for e in entries}, {"dolphin", "mame", "scummvm", "ares", "project64"})
+        self.assertEqual({e.id for e in entries},
+                         {"dolphin", "mame", "scummvm", "ares", "project64", "retroarch", "pcsx2", "melonds", "mgba",
+                          "flycast", "blastem"})
         for entry in entries:
             with self.subTest(entry=entry.id):
                 self.assertFalse(entry.trusted_owner)
@@ -865,11 +877,14 @@ class FindingInstallsTests(Isolated):
         self.assertEqual(em.scan_folder(self.tmp / "emus", self.catalog(), "windows")["pcsx2"].version, "v2.3.0")
 
     def test_emurelation_alternate_names_let_a_scan_recognise_more_folders(self):
+        # The catalog now names each program (RMG.exe), so this checks the mapping itself with an entry that has no
+        # launch pattern: without the mapping "Mupen GUI" is a folder Distill does not know, with it the folder is RMG.
         self.touch("Mupen GUI/app.exe")
-        catalog = self.catalog()
+        catalog = [e for e in self.catalog() if e.id != "rmg"]
         self.assertNotIn("rmg", em.scan_folder(self.tmp / "emus", catalog, "windows"))
         relation = em.parse_relation({"RMG": {"id": "RMG", "name": "RMG", "AltNames": ["Mupen GUI", "Rosalie's Mupen GUI"]}}, {})
-        found = em.scan_folder(self.tmp / "emus", em.enrich(catalog, relation), "windows")
+        plain = [em.Emulator(id="rmg", name="Rosalie's Mupen GUI", system="Nintendo 64")]
+        found = em.scan_folder(self.tmp / "emus", em.enrich(plain, relation), "windows")
         self.assertIn("rmg", found)
 
     def test_apply_scan_keeps_what_is_there_and_replaces_what_is_gone(self):

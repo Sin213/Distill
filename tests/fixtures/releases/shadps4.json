@@ -1,0 +1,480 @@
+[
+ {
+  "tag_name": "Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9",
+  "name": "Pre-release-shadPS4-2026-11-17-9ac8b23",
+  "body": "Full Changelog: [v.0.21.0...9ac8b23](https://github.com/shadps4-emu/shadPS4/compare/v.0.21.0...9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9)",
+  "published_at": "2026-11-17T12:28:06Z",
+  "prerelease": true,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-2026-11-17-9ac8b23.zip",
+    "size": 33614801,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9/shadps4-linux-sdl-2026-11-17-9ac8b23.zip",
+    "digest": "sha256:63760d0be7ca575708443445c8dbfd66683597b4d571db8a16991af7ac2b333c"
+   },
+   {
+    "name": "shadps4-macos-sdl-2026-11-17-9ac8b23.zip",
+    "size": 37093193,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9/shadps4-macos-sdl-2026-11-17-9ac8b23.zip",
+    "digest": "sha256:76732abaa54ede12fc0c9060fabbb5c9e7d828b8ec477a04cc027f15207942e4"
+   },
+   {
+    "name": "shadps4-ubuntu64-2026-11-17-9ac8b23.zip",
+    "size": 45469754,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9/shadps4-ubuntu64-2026-11-17-9ac8b23.zip",
+    "digest": "sha256:3a1c788d0545a90eab3d26368ed8d84432ca8eecbd809dc8813f6dc843fc88fb"
+   },
+   {
+    "name": "shadps4-win64-sdl-2026-11-17-9ac8b23.zip",
+    "size": 31651992,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/Pre-release-shadPS4-2026-11-17-9ac8b23bdc0f278d5b41ae5b0181cf142deba0f9/shadps4-win64-sdl-2026-11-17-9ac8b23.zip",
+    "digest": "sha256:70c24c8af11b53e74eaced2dc8a69d4a574e5e09d49d62eef6248ded2ae31188"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.21.0",
+  "name": "shadps4 v0.21.0 - codename Until Mavethee Dawn",
+  "body": "Another week another release . There are ton of changes , so why not ? \r\n\r\n## Core\r\n* Properly check where an input came from for digital->analog input smoothing\r\n* cpu_patches: Work around Rosetta 2 mistranslating negated scalar compares \r\n* file_sys: Report stable file identities in stat and fstat \r\n* Allow file type identification for '/addcont' path\r\n* emulator: stop clearing temporary data on",
+  "published_at": "2026-10-30T13:38:45Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.21.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.21.0.zip",
+    "size": 33362189,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.21.0/shadps4-linux-sdl-0.21.0.zip",
+    "digest": "sha256:7c41c58254461d742b5edf564e23795697b63e9e46de11d0e1ed67bd2cbaae68"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.21.0.zip",
+    "size": 37075102,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.21.0/shadps4-macos-sdl-0.21.0.zip",
+    "digest": "sha256:391b585d3131ebf69c585410349117d9436e529151e430156c02f7ffde364b8f"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.21.0.zip",
+    "size": 31725856,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.21.0/shadps4-win64-sdl-0.21.0.zip",
+    "digest": "sha256:95295b8f109663f70c2dac685e6232aa97be1353f6ed0a5d5e0c5dd24a797d88"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.20.0",
+  "name": "shadps4 v0.20.0 - codename Dead Or Stephen 5 - The Comeback",
+  "body": "That was close wasn't it? I know you are not used to so close releases but we have a lot of new things to demonstrate so why not? This release is following the first official stable release of shadNet 0.1.0, so we have some online playability available (yes Bloodborne fans, online Bloodborne is now officially available). There are also a tons of fixes to different areas of emu , you can check the ",
+  "published_at": "2026-10-14T14:51:07Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.20.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.20.0.zip",
+    "size": 33229758,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.20.0/shadps4-linux-sdl-0.20.0.zip",
+    "digest": "sha256:be25d0324cd7b74068d32cdb66fa1b7b1e7bb499b062be51c7006d27d41d4255"
+   },
+   {
+    "name": "shadps4-macos-sdl-2026-0.20.0.zip",
+    "size": 36937952,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.20.0/shadps4-macos-sdl-2026-0.20.0.zip",
+    "digest": "sha256:50ac3b18f2ad0b52dda4eae9b2f6c54a4c26c0425c00c053073fff4da74d7c60"
+   },
+   {
+    "name": "shadps4-win64-sdl-2026-0.20.0.zip",
+    "size": 31574011,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.20.0/shadps4-win64-sdl-2026-0.20.0.zip",
+    "digest": "sha256:d5cdc55c57e85e5fe44ff867b420246dc832077356d943ccc43c5d950c878b37"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.19.0",
+  "name": "shadps4 v0.19.0 - codename The Shadoween special",
+  "body": "Welcome back to another shadPS4 release . It is over one month since our previous release and guess what we are back again with a lot more fixes and a lot more playable games . Rapid work has been done in different areas of the emu, but i guess the glory goes to the huge amount of GPU fixes that improved so many games, some of them are really playable now . I won't steal the fun of discovering the",
+  "published_at": "2026-10-02T14:03:45Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.19.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.19.0.zip",
+    "size": 32964443,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.19.0/shadps4-linux-sdl-0.19.0.zip",
+    "digest": "sha256:a6e3b83fd6c9ea7b29c37e77e1aa687802d4ecd98c2ea794ca9e1d97b24a0cf9"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.19.0.zip",
+    "size": 36656177,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.19.0/shadps4-macos-sdl-0.19.0.zip",
+    "digest": "sha256:47676b4875343b69f49689c7668d71de79ecaaa17ffeab3415d4137800b7ee02"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.19.0.zip",
+    "size": 31364251,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.19.0/shadps4-win64-sdl-0.19.0.zip",
+    "digest": "sha256:b9600602a809b7cb4aaf29cbeb0917d32caecf27bc5a9232df76200fbf80c017"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.18.0",
+  "name": "shadps4 v0.18.0 - codename UltraPersona",
+  "body": "shadPS4 v0.18.0 \"UltraPersona\"\r\n\r\nHello there, it hasn't been a while, has it? While not much time has passed since our last stable release, we are here again with a brand new one. The main reason for this release is broken shadNet authorization in certain cases on the 0.17.0 release, but we have some more interesting new features as well.\r\n\r\nFirstly, after some fixes, AvPlayer can now be loaded a",
+  "published_at": "2026-08-18T08:23:46Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.18.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.18.0.zip",
+    "size": 34783402,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.18.0/shadps4-linux-sdl-0.18.0.zip",
+    "digest": "sha256:3cf0f669c089411775a2434a41ca9c391fb7d24c1a1521ee45dd1d36f390c4a4"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.18.0.zip",
+    "size": 38342169,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.18.0/shadps4-macos-sdl-0.18.0.zip",
+    "digest": "sha256:3543e255e2c9bad792ff77000f251493c9af3b32fef7ce5dab3a40906b403fed"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.18.0.zip",
+    "size": 33202076,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.18.0/shadps4-win64-sdl-0.18.0.zip",
+    "digest": "sha256:ea273c6a2b296d4cee2e3dc45414fa9077f5fb43679784d1c43eee97a484fcc8"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.17.0",
+  "name": "shadps4 v0.17.0 - codename Garbage Collector's Edition",
+  "body": "shadPS4 v0.17.0\r\n\r\nWelcome to another big release of shadPS4. This release is the first to introduce shadnet support, which although still doesn't offer much it allows to post your online scores and share them with other players. Still you can't play multiplayer games but we are working towards to make it possible one day. Another big update is ZArchive support. Forget the 20.000 files per game yo",
+  "published_at": "2026-07-30T21:25:27Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.17.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.17.0.zip",
+    "size": 34635584,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.17.0/shadps4-linux-sdl-0.17.0.zip",
+    "digest": "sha256:0ad8ecbd2cfbdc1ea8fbc909638e0cba912235c6eb403d72faf9d4f67e925cc7"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.17.0.zip",
+    "size": 38215509,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.17.0/shadps4-macos-sdl-0.17.0.zip",
+    "digest": "sha256:3245eadecc89f945a9bf7897a9223d805b3af86cccf300172d46179b3827d3e5"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.17.0.zip",
+    "size": 32999497,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.17.0/shadps4-win64-sdl-0.17.0.zip",
+    "digest": "sha256:0bee9143103e12de2ab8dc41d907372df36c7a606dd6bc6f70776c3ac79f7ba0"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.16.0",
+  "name": "shadps4 v0.16.0 - codename Plutie-fueled",
+  "body": "# shadPS4 v0.16.0 Released\r\n\r\nThe shadPS4 team is excited to announce the release of **shadPS4 v0.16.0**, our largest update to date. This release delivers major improvements across emulation accuracy, graphics, audio, input handling, user experience, platform support, and developer infrastructure.\r\n\r\nWith hundreds of changes from dozens of contributors, v0.16.0 represents another significant step",
+  "published_at": "2026-06-01T16:05:43Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.16.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.16.0.zip",
+    "size": 32152818,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.16.0/shadps4-linux-sdl-0.16.0.zip",
+    "digest": "sha256:7cbb19fe8c909e04129d2431eef723d4710499b40d1aed0047681d14a1dfc79b"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.16.0.zip",
+    "size": 34585696,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.16.0/shadps4-macos-sdl-0.16.0.zip",
+    "digest": "sha256:cd6d4f1232a4a056c0a5c1f45bc94080b4eb6d2cb13e3a15dd77676b15425c12"
+   },
+   {
+    "name": "shadps4-ubuntu64-0.16.0.zip",
+    "size": 43439411,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.16.0/shadps4-ubuntu64-0.16.0.zip",
+    "digest": "sha256:daaa7912ea9bb21911eb461b42ac3a231a761e7f218a93e74899f19e9d26a6a4"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.16.0.zip",
+    "size": 30529170,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.16.0/shadps4-win64-sdl-0.16.0.zip",
+    "digest": "sha256:f6cdcca82f239fb69b2f820ad9dec07f2f00b423273851b67a0e24bc783acf46"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.15.0",
+  "name": "shadps4 v0.15.0 - codename RE6_PRIG",
+  "body": "Greetings, fellow users, testers, devs.\r\n\r\nMissed us already? Here is a brand new shadPS4 release for you out there. A lot of new features is here to improve compatibility and general user experience as well. **It is recommended to use 0.15.0 for some time since there are a lot of breaking changes coming to 0.15.1 WIP** (that will correct and improve a lot of things), but we hope it will be produc",
+  "published_at": "2026-03-17T07:46:48Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.15.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.15.0.zip",
+    "size": 18746423,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.15.0/shadps4-linux-sdl-0.15.0.zip",
+    "digest": "sha256:66a1e467695d3ba6962a1230b746b6a9cb02de2f5c25b2b0321b1f0703331aa4"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.15.0.zip",
+    "size": 20138372,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.15.0/shadps4-macos-sdl-0.15.0.zip",
+    "digest": "sha256:92d9d28244a1c14d1c4317554e478035f44410bc5518db95e3e8d8a456b01910"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.15.0.zip",
+    "size": 15869812,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.15.0/shadps4-win64-sdl-0.15.0.zip",
+    "digest": "sha256:46b53eb102107b349552854a70a8671c18fe986270cd52fcec44bf41e65c2835"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.14.0",
+  "name": "shadps4 v0.14.0 - codename JustShadow4",
+  "body": "Greeting fellow users , testers , devs. \r\n\r\nHere is a brand new release from shadPS4 , It took as some time but some nice features are here so we wanted to share them with all of you out there . This new release brings some more compatiblity with games and several bug fixes. You can check the list below\r\n\r\nCore\r\n====\r\nAdded thread name to log lines\r\nFixed float parsing in memory patcher\r\nRead comp",
+  "published_at": "2026-02-07T10:39:45Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.14.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.14.0.zip",
+    "size": 17950789,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.14.0/shadps4-linux-sdl-0.14.0.zip",
+    "digest": "sha256:eb6d0be1562b611b121381075eeba2c41692c11a18e14edd2fd7b20811eb5aa2"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.14.0.zip",
+    "size": 19888581,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.14.0/shadps4-macos-sdl-0.14.0.zip",
+    "digest": "sha256:777444f0c601ab24ade869edebd4427c1df46f4ad24eaf4d4880a82007678511"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.14.0.zip",
+    "size": 15653268,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.14.0/shadps4-win64-sdl-0.14.0.zip",
+    "digest": "sha256:d4a1ada35f2908e5376174a0df73580f9ec2d4e5a2eb88ea493d2d923338636f"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.13.0",
+  "name": "shadps4 v0.13.0 - codename Ghost of Matthewshima",
+  "body": "Here we are again with an early Christmas present. Santa might not have reached your home yet, but shadPS4 will.\r\n\r\nThis release brings the long-awaited Bloodborne speedup fix, along with a lot of AJM fixes from our great Roamic dev, who was kind enough to resolve some weird sound issues (God of War 3 and other games now almost have perfect sound).\r\n\r\nThere are also many additional fixes; I’ll try",
+  "published_at": "2025-12-24T08:31:09Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.13.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.13.0.zip",
+    "size": 17183259,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.13.0/shadps4-linux-sdl-0.13.0.zip",
+    "digest": "sha256:558d1bb3888ca71e49394d4a43472344b1b2367cc0419180a6b0e6205843419c"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.13.0.zip",
+    "size": 18999368,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.13.0/shadps4-macos-sdl-0.13.0.zip",
+    "digest": "sha256:e9f1074390caba7d2a85bd9e80bb9ab17796e24981998290f0ff45bf8bd45fe8"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.13.0.zip",
+    "size": 14772021,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.13.0/shadps4-win64-sdl-0.13.0.zip",
+    "digest": "sha256:04112f1aa4f2c4e34b67d06ed3beab57b2f40a52e237e99d569d197b93006694"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.12.5",
+  "name": "shadps4 v0.12.5 - codename kyosan",
+  "body": "Some would say, \"why a new release this early\"? While releases came every 2-3 months before, the previous 0.12.0 release had an input change, which made multiple games unplayable, so we needed to patch it quite early. With that, some other interesting features and bugfixes came from development continuing as before, so enjoy. ;)\r\n\r\nCore\r\n======\r\n-Fix divide by zero in kernel time\r\n-Reverted contro",
+  "published_at": "2025-11-07T07:02:51Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.12.5",
+  "assets": [
+   {
+    "name": "shadps4-linux-sdl-0.12.5.zip",
+    "size": 16842217,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.5/shadps4-linux-sdl-0.12.5.zip",
+    "digest": "sha256:f7d7de431d50ad5cace6ac3e248f730f90e381597a9e198bda669cd2ce829f69"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.12.5.zip",
+    "size": 18641475,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.5/shadps4-macos-sdl-0.12.5.zip",
+    "digest": "sha256:bd33e6a439647f5d186a45cbcfd987587686cb45e97e3c2ca85bd81cfe4b2f32"
+   },
+   {
+    "name": "shadps4-win64-sdl-2025-0.12.5.zip",
+    "size": 14247947,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.5/shadps4-win64-sdl-2025-0.12.5.zip",
+    "digest": "sha256:033f1dd4c1c2447220db6b7ddd4a102ba69f026de6b10196d62cb6c4d30f95f5"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.12.0",
+  "name": "shadps4 v0.12.0 - codename fire-square",
+  "body": "Happy halloween ppl! It is a special day today and what more special than having a brand new shadps4 release . Although it was announced that it Qt builds were gonna removed from 0.12.0 , we decided to release it for one last time . Starting from 0.12.1 , shadPS4 will be cli only , but we already have launchers for you ready , check the download section of the site. \r\nEnough talking here is the la",
+  "published_at": "2025-10-31T07:15:58Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.12.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-qt-0.12.0.zip",
+    "size": 96475177,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-linux-qt-0.12.0.zip",
+    "digest": "sha256:de587852c1dd601e9e63d512fc1885fa678474e2692d9ce39d30d43166b6c6a2"
+   },
+   {
+    "name": "shadps4-linux-sdl-0.12.0.zip",
+    "size": 16772686,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-linux-sdl-0.12.0.zip",
+    "digest": "sha256:88312b7601bbd2add1eeb2e1d85a079ab9faf11b518ae9a908d672b16f230faa"
+   },
+   {
+    "name": "shadps4-macos-qt-0.12.0.zip",
+    "size": 60866682,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-macos-qt-0.12.0.zip",
+    "digest": "sha256:2fa767266ee51449aa2c26f10e6ebd2dd2bc49aea4d63678de74e5b91c9ded15"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.12.0.zip",
+    "size": 18541854,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-macos-sdl-0.12.0.zip",
+    "digest": "sha256:008ecf11c049aae5a424ae3c568af6cac15b6e6d10a15c85081115ed255e3c53"
+   },
+   {
+    "name": "shadps4-win64-qt-0.12.0.zip",
+    "size": 38495698,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-win64-qt-0.12.0.zip",
+    "digest": "sha256:f6af1dcfe6dbc19e0190c72ca1b2d0b83d1fda8f11deda007347863fa0d6cbe9"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.12.0.zip",
+    "size": 14160746,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.12.0/shadps4-win64-sdl-0.12.0.zip",
+    "digest": "sha256:343c36e223dd5e43c566921deeae28d54f521031ac2b5c9cb5eedae1b4011506"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.11.0",
+  "name": "shadps4 v0.11.0 - codename nettone",
+  "body": "A brand new release just dropped in . As usual we have a lot of new features and bugfixes to this release with the most important that games that uses Unreal Engine are now start to booting and some of them are even playable.\r\n\r\nCore\r\n====\r\n* mmap executable memory\r\n* Zero top bits in INSERTQ/EXTRQ\r\n* Fix read-only file unmaps on Windows\r\n* Standardize RegisterLib names for HLE libraries\r\n* Filesy",
+  "published_at": "2025-09-18T07:01:20Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.11.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-qt-0.11.0.zip",
+    "size": 96386406,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-linux-qt-0.11.0.zip",
+    "digest": "sha256:d2977116feeb05da2d03912e3395d15ae61e252bae75bc5660dd252bf38128ee"
+   },
+   {
+    "name": "shadps4-linux-sdl-0.11.0.zip",
+    "size": 16702477,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-linux-sdl-0.11.0.zip",
+    "digest": "sha256:744458d3392492fd6ad03a1e2c9da9001d15e4abcbd6f92dfa543c600b4ec53a"
+   },
+   {
+    "name": "shadps4-macos-qt-0.11.0.zip",
+    "size": 60847033,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-macos-qt-0.11.0.zip",
+    "digest": "sha256:00b56c74b818f4597468c42d3ff0700d772ca095c0e7668a6e2ca6fe900af44d"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.11.0.zip",
+    "size": 18587192,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-macos-sdl-0.11.0.zip",
+    "digest": "sha256:48e88ab9101058a994f53af8cf020461adc14f9b4e45fa35279531eea06abe5c"
+   },
+   {
+    "name": "shadps4-win64-qt-0.11.0.zip",
+    "size": 38231591,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-win64-qt-0.11.0.zip",
+    "digest": "sha256:cef6c31b25afe115d2b17c4f6b1c48817ef6fd56ce5e48a94947f6fceac2793b"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.11.0.zip",
+    "size": 14099855,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.11.0/shadps4-win64-sdl-0.11.0.zip",
+    "digest": "sha256:14e753d1eac69187efe3868dd24861c537ef8b69c98498f3137f6815f92d2bfa"
+   }
+  ]
+ },
+ {
+  "tag_name": "v.0.10.0",
+  "name": "shadps4 v0.10.0 - codename The Last LNDF",
+  "body": "Surprise! Bet you didn't expect a release from me, did you? :) Well you all asked for a miracle, and here I am, providing one. Anyways, this release is dedicated to one of our not-so-new dev, LNDF, who is responsible for a significant amount of the new GPU code, such as implementing Direct Memory Access for video memory. This isn't a solo endeavour though, there were far more updates to the emulat",
+  "published_at": "2025-07-06T18:37:26Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/shadps4-emu/shadPS4/releases/tag/v.0.10.0",
+  "assets": [
+   {
+    "name": "shadps4-linux-qt-0.10.0.zip",
+    "size": 142900239,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-linux-qt-0.10.0.zip",
+    "digest": "sha256:c219f25d2382095deae74ec8ffd60a5b43df9d8752ae918e8e08957c5eff6016"
+   },
+   {
+    "name": "shadps4-linux-sdl-0.10.0.zip",
+    "size": 16641625,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-linux-sdl-0.10.0.zip",
+    "digest": "sha256:407e2a0d8688cb54fb9e763bd1708f54e22b83843d0b18d6a17ceef55f5ea108"
+   },
+   {
+    "name": "shadps4-macos-qt-0.10.0.zip",
+    "size": 60442906,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-macos-qt-0.10.0.zip",
+    "digest": "sha256:844a1504bc8157343650af14b2fcc488a8ce2aacfcf0bbd664cd462fd3daba4b"
+   },
+   {
+    "name": "shadps4-macos-sdl-0.10.0.zip",
+    "size": 18538648,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-macos-sdl-0.10.0.zip",
+    "digest": "sha256:04caf023b764e4981b9c1d2d22f5fc8a84fc3b0bf8efc4b9e8a2682d6d857e40"
+   },
+   {
+    "name": "shadps4-ubuntu64-0.10.0.zip",
+    "size": 27503829,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-ubuntu64-0.10.0.zip",
+    "digest": "sha256:afa65f36e0d71f06d779cf8783462f4eeec8a9d38954f75f6ef58e977119da31"
+   },
+   {
+    "name": "shadps4-win64-qt-0.10.0.zip",
+    "size": 37819882,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-win64-qt-0.10.0.zip",
+    "digest": "sha256:29bc9998ae87ef25d6874e09a5a664ac492c3098675bc5351e2adcb56d9a6fee"
+   },
+   {
+    "name": "shadps4-win64-sdl-0.10.0.zip",
+    "size": 14031766,
+    "browser_download_url": "https://github.com/shadps4-emu/shadPS4/releases/download/v.0.10.0/shadps4-win64-sdl-0.10.0.zip",
+    "digest": "sha256:198d013727899a224501a4c1920acaa8dc79e9fb8770f230298c1772337c5004"
+   }
+  ]
+ }
+]

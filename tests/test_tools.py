@@ -463,3 +463,15 @@ class HactoolnetTests(TempDirTest):
         text = [e[1] for e in events if e[0] == "hactoolnet_status"][-1]
         self.assertIn("rate-limiting", text)
         self.assertIn("API keys", text)
+
+    def test_the_dead_release_api_points_at_build_instead_of_a_network_error(self):
+        """Thealexbarney/LibHac 404s now: the status line must offer Build, not 'could not reach the download server'."""
+        mgr, events = self.manager()
+        gone = tools.urllib.error.HTTPError("u", 404, "not found", {}, None)
+        with mock.patch.object(tools.urllib.request, "urlopen", side_effect=gone), \
+                mock.patch.object(mgr, "_local_copy", return_value=None):
+            mgr._run()
+        text = [e[1] for e in events if e[0] == "hactoolnet_status"][-1]
+        self.assertIn("Press Build", text)
+        self.assertIn("git.ryujinx.app", text)
+        self.assertNotIn("Couldn't reach", text)

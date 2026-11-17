@@ -86,10 +86,32 @@ class Emulator:
     flatpak: str = ""  # catalog: a Flatpak app id (org.mamedev.MAME) — installed through flatpak instead of a download
     wine: bool = False  # catalog: a Windows-only program that runs under Wine here
     build: str = ""  # catalog: a "build from source" recipe key (ares)
+    status: str = ""  # catalog: how the project stands today ("" | experimental | superseded | discontinued), not whether it runs
+    replaced_by: str = ""  # catalog: the id of what took over from a superseded emulator, so its page can send the person there
+    kind: str = "emulator"  # catalog: "emulator", or "tool" for a project that is not an emulator at all (AnyPS5's relinker)
+    preferred_launch: bool = False  # catalog: an extra that is what Distill starts when its emulator is launched
+    prerelease_only: bool = False  # catalog: the project publishes pre-release builds only, so "latest" is a pre-release
+    details: str = ""  # catalog: long-form explanation for the page, in markdown
+    setup: dict = field(default_factory=dict)  # catalog: how to set it up per OS ({"windows": "...", "linux": "..."})
+    dependencies: tuple[str, ...] = ()  # catalog: what has to be on the PC first
+    usage: tuple[str, ...] = ()  # catalog: command lines, shown as they would be typed
+    tool_key: str = ""  # catalog: the tool in distill/tools.py that installs this, when it is a tool (relinker)
+    extras: tuple["Emulator", ...] = ()  # catalog: optional extras of this entry (shadPS4's Qt launcher), never tiles of their own
+
+
+LEGACY_STATUSES = ("superseded", "discontinued")  # nothing to download any more; a copy the person already has still runs
+STATUSES = LEGACY_STATUSES + ("experimental",)
+KINDS = ("emulator", "tool")  # "tool": listed so its page can explain it, but there is no emulator to install or launch
 
 
 def _tuple(v) -> tuple:
     return tuple(v) if isinstance(v, (list, tuple)) else ((v,) if v else ())
+
+
+def _for_os(d: dict, plat: str) -> dict:
+    """The entry with its per-OS block laid over it (`"linux": {...}`). That nested block is how one entry describes another
+    system's build without losing the Windows one, and it is read before the trust rules are applied."""
+    return {**d, **d.get("linux", {})} if plat == "linux" else d
 
 
 def _emulator(d: dict, plat: str) -> Emulator:
@@ -97,10 +119,20 @@ def _emulator(d: dict, plat: str) -> Emulator:
     repo = d.get("repo") or by_os.get(plat) or next(iter(by_os.values()), "")
     owner = str(d.get("trusted_owner") or "")
     available, notes = d.get("active", True) is not False, d.get("notes", "")
+    status = str(d.get("status") or "").strip().lower()
+    if status not in STATUSES:
+        status = ""
+    kind = str(d.get("kind") or "").strip().lower()
+    if kind not in KINDS:
+        kind = "emulator"
+    if kind == "tool":  # there is no emulator here: the page explains the tool, and the tool itself is installed in Settings
+        available = False
     if owner and repo and d.get("source", "github") == "github" and repo.split("/")[0].lower() != owner.lower():
         available, notes = False, f"Refused: this entry points at {repo.split('/')[0]}, not {owner}. Copies of this project carry malware."
-    if plat == "linux" and owner and any(d.get(kind) for kind in ("flatpak", "build", "wine")):
+    if plat == "linux" and owner and any(d.get(field_name) for field_name in ("flatpak", "build", "wine")):
         available, notes = False, f"Refused: Flatpak, source builds and Wine cannot verify the trusted owner {owner}. Copies of this project carry malware."
+    if status in LEGACY_STATUSES:  # superseded or discontinued: the person can keep what they have, but nothing is downloaded
+        available = False
     if not (repo or d.get("adapter")):
         available = False
     return Emulator(
@@ -112,7 +144,14 @@ def _emulator(d: dict, plat: str) -> Emulator:
         channel_repos={str(k): str(v) for k, v in (d.get("channel_repos") or {}).items()}, available=available,
         verify=bool(d.get("verify")), systems=_tuple(d.get("systems")), aliases=tuple(a for a in _tuple(d.get("aliases")) if a),
         logo=str(d.get("logo") or ""), hosts=_tuple(d.get("download_hosts")), flatpak=str(d.get("flatpak") or ""),
-        wine=bool(d.get("wine")), build=str(d.get("build") or ""))
+        wine=bool(d.get("wine")), build=str(d.get("build") or ""), status=status, replaced_by=str(d.get("replaced_by") or ""),
+        kind=kind, preferred_launch=bool(d.get("preferred_launch")),
+        prerelease_only=bool(d.get("prerelease_only")), details=str(d.get("details") or ""),
+        setup={str(k): str(v) for k, v in (d.get("setup") or {}).items() if v},
+        dependencies=tuple(str(x) for x in _tuple(d.get("dependencies")) if x),
+        usage=tuple(str(x) for x in _tuple(d.get("usage")) if x), tool_key=str(d.get("tool_key") or ""),
+        extras=tuple(_emulator(_for_os(extra, plat), plat) for extra in d.get("extras") or []
+                     if isinstance(extra, dict) and extra.get("id") and extra.get("name")))
 
 
 def bundled_manifest() -> Path:
@@ -159,8 +198,7 @@ def load_catalog(paths: Iterable[Path] | None = None, plat: str = "") -> list[Em
                 if not isinstance(d, dict):
                     continue
                 # Resolve Linux-only fields before enforcing the bundled trust policy below.
-                if plat == "linux":
-                    d = {**d, **d.get("linux", {})}
+                d = _for_os(d, plat)
                 em = _emulator(d, plat)
             except (KeyError, TypeError, AttributeError):
                 continue
@@ -177,12 +215,45 @@ def load_catalog(paths: Iterable[Path] | None = None, plat: str = "") -> list[Em
     return sorted(out.values(), key=order)
 
 
+def all_entries(catalog: Iterable[Emulator]) -> list[Emulator]:
+    """Every entry the catalog knows: the emulators themselves and the optional extras nested under them. Extras are not
+    entries of their own — they never get a tile or change the count — but they install, update and launch like one."""
+    out: list[Emulator] = []
+    for e in catalog:
+        out += [e, *e.extras]
+    return out
+
+
+def companions(em: Emulator) -> tuple[Emulator, ...]:
+    """The optional extras belonging to one entry (shadPS4's Qt launcher, say). Each installs into a folder of its own, so
+    the emulator is never replaced by its extra and the extra can be installed whether or not the emulator is."""
+    return em.extras
+
+
+def installed_companion(em: Emulator, store: rc.Store) -> rc.Installed | None:
+    """The extra that should be started in place of the emulator's own program: what `launch` uses when it has a store."""
+    for extra in em.extras:
+        if not extra.preferred_launch:
+            continue
+        inst = store.installed(extra.id)
+        if inst is not None and inst.exe_path().exists():
+            return inst
+    return None
+
+
 def for_this_os(em: Emulator, plat: str = "") -> bool:
     return (plat or rc.platform_key()) in em.platforms
 
 
 def downloadable(em: Emulator, plat: str = "") -> bool:
     return em.available and for_this_os(em, plat)
+
+
+def launchable(em: Emulator, plat: str = "") -> bool:
+    """Can this emulator be started on this PC? A superseded or discontinued project has nothing left to download, but a copy
+    the person already installed keeps working: its files are on their disk and Distill only has to start them. A refused entry
+    (one the trust rules turned off) is never started: there the program itself is the problem."""
+    return for_this_os(em, plat) and (em.available or em.status in LEGACY_STATUSES)
 
 
 # ---- the emurelation mapping ----------------------------------------------------------------------------------
@@ -619,22 +690,297 @@ def choose(em: Emulator, rels: list[rc.Release], channel: str = "stable", plat: 
     return rc.choose_release(rels, em, plat, machine)
 
 
+# ---- what Distill installs, and in what order it prefers to ----------------------------------------------------
+# The catalog says what a project publishes: release files, a Flatpak app id, a source recipe. This decides which of those
+# to use when there is a choice, so that everything is installed the same way instead of entry by entry:
+#
+#   1. the project's own standalone AppImage              4. a native portable Linux archive
+#   2. an archive of its own that holds an AppImage       5. a distribution package file it publishes (.deb / .rpm)
+#   3. Flatpak (a per-user install, no system root)       6. building it from source / documented manual setup
+#
+# Nothing here asks the operating system for a package: an AppImage in the person's own folder and a per-user Flatpak both
+# work on an immutable host (Bazzite, Silverblue, SteamOS) with nothing layered over the OS.
+APPIMAGE = "appimage"
+APPIMAGE_ARCHIVE = "appimage-archive"
+FLATPAK = "flatpak"
+PORTABLE = "portable"
+PACKAGE = "package"
+SOURCE = "source"
+METHOD_ORDER = (APPIMAGE, APPIMAGE_ARCHIVE, FLATPAK, PORTABLE, PACKAGE, SOURCE)
+METHOD_LABELS = {APPIMAGE: "AppImage", APPIMAGE_ARCHIVE: "Archive with an AppImage", FLATPAK: "Flatpak",
+                 PORTABLE: "Portable archive", PACKAGE: "Distribution package", SOURCE: "Build from source"}
+# How projects spell a CPU in a file name, and the ways they say "not that one".
+_ARCH_WORDS = {"x64": {"x86_64", "x86-64", "amd64", "x64", "64bit"}, "arm64": {"arm64", "aarch64", "arm"},
+               "unsupported": {"i386", "i686", "386", "32bit", "armv7", "armv7l", "armhf", "arm32"}}
+_NOT_THE_PROGRAM = {"libretro", "bios", "firmware", "symbols", "docs", "doc", "manual"}
+_EXTRA_BUILD = {"pgo", "lto", "asan", "debug"}  # a second, tuned build of the same thing: worth offering, never the default
+# Archives named in their own way: Xenia ships "xenia_canary_linux.tar_.xz", which is a tar whatever it is called (the
+# extractor sniffs it, see recomps._sniffs_as_tar).
+_ARCHIVE_NAME = re.compile(r"\.(zip|7z|tar|tgz)$|\.tar[._][a-z0-9.]+$", re.IGNORECASE)
+
+
+@dataclass(frozen=True, slots=True)
+class InstallOption:
+    """One way this emulator can be put on this PC: the method, the release it comes from, and the file that carries it (a
+    Flatpak and a source build have no file of their own).
+
+    `manual` marks a route Distill will not take itself: a .deb or .rpm the project publishes. Installing one is a system
+    package change, which an immutable host cannot take, and Distill cannot unpack one either, so the file is named for the
+    person to use with their own package manager and is never offered as the thing the Install button does.
+    """
+    method: str
+    release: rc.Release | None = None
+    asset: dict = field(default_factory=dict)
+    manual: bool = False
+
+    def pair(self) -> tuple[rc.Release, dict]:
+        return self.release, self.asset  # type: ignore[return-value]
+
+    @property
+    def label(self) -> str:
+        return METHOD_LABELS.get(self.method, self.method)
+
+    def text(self) -> str:
+        """How a chooser lists it: the method, then the file (or the recipe) that carries it."""
+        name = str(self.asset.get("name") or "")
+        return f"{self.label} — {name}" if name else self.label
+
+
+def _method_of(name: str) -> str:
+    """What install method a release file is, from its name alone. The extension decides it, except that an archive is only
+    known to hold an AppImage when the project says so in the name (an archive that holds one but doesn't say so is still
+    unpacked properly, and its AppImage is what gets registered to run)."""
+    low = name.lower()
+    if low.endswith(".appimage"):
+        return APPIMAGE
+    if low.endswith(rc.ARCHIVE_SUFFIXES) or _ARCHIVE_NAME.search(low):
+        return APPIMAGE_ARCHIVE if "appimage" in rc._TOKEN_SPLIT.split(low) else PORTABLE
+    if low.endswith((".deb", ".rpm")):
+        return PACKAGE
+    return ""
+
+
+def _asset_arch(name: str) -> str:
+    """'x64' / 'arm64' when the file name says which CPU it is for, 'unsupported' for a 32-bit build, else ''.
+
+    Projects name these every way there is and sometimes not at all: x86_64, amd64, x64, aarch64, arm64. So the name is
+    read, never assumed, and a file that names no CPU is taken as an x86_64 build (which is what an unnamed Linux binary
+    almost always is) rather than being installed on a PC that cannot run it.
+    """
+    words = {w for w in rc._TOKEN_SPLIT.split(name.lower()) if w}
+    if words & _ARCH_WORDS["unsupported"]:
+        return "unsupported"
+    arm, x64 = bool(words & _ARCH_WORDS["arm64"]), bool(words & _ARCH_WORDS["x64"])
+    return "arm64" if arm and not x64 else "x64" if x64 and not arm else ""
+
+
+def _method_here(asset: dict, machine: str, explicit: bool = False) -> tuple[str, str]:
+    """(method, "") when this release file can be installed on this PC, else ("", why not): 'os' for another system's file,
+    'arch' for another CPU's, 'none' for something that is not the program (a checksum, a core, a manual).
+
+    `explicit` says the catalog names this file for Linux itself (`"asset": {"linux": …}`). That wins over the file's own
+    name, which is how an entry describes a Windows build meant to run through Wine: its zip says nothing about Linux, and
+    the catalog is the one saying it is the Linux route.
+    """
+    name = str(asset.get("name") or "")
+    if not name or not asset.get("url"):
+        return "", "none"
+    method = _method_of(name)
+    if not method:
+        return "", "none"
+    low = name.lower()
+    if low.endswith(rc.SKIP_SUFFIXES) and method != PACKAGE:  # a checksum, a signature, a debug symbol: never the program
+        return "", "none"
+    words = {w for w in rc._TOKEN_SPLIT.split(low) if w}
+    if words & (rc._BAD | _NOT_THE_PROGRAM):
+        return "", "none"
+    if any(words & rc._OS_WORDS[other] for other in ("windows", "macos")):
+        if not explicit:
+            return "", "os"
+    elif not (words & rc._OS_WORDS["linux"] or method in (APPIMAGE, PACKAGE)) and not explicit:
+        return "", "os"  # a Linux file has to say so, unless its own extension can only be one
+    arch = _asset_arch(name)
+    if arch == "unsupported" or (arch and arch != machine) or (not arch and machine != "x64"):
+        return "", "arch"
+    return method, ""
+
+
+def _candidate_key(candidate: tuple[int, dict, str]) -> tuple:
+    """Sort key, best first: the method's place in the order above, then the plain build before a tuned one, then the
+    file the release lists first."""
+    index, asset, method = candidate
+    name = str(asset.get("name") or "").lower()
+    words = {w for w in rc._TOKEN_SPLIT.split(name) if w}
+    return METHOD_ORDER.index(method), len(words & _EXTRA_BUILD), len(name), index
+
+
+def _channel_order(rels: list[rc.Release], channel: str) -> list[rc.Release]:
+    """Stable: the releases that aren't a pre-release first (each group newest first), so a release candidate never replaces
+    a stable build. Nightly: simply newest first."""
+    if channel == "nightly":
+        return list(rels)
+    return [r for r in rels if not r.prerelease] + [r for r in rels if r.prerelease]
+
+
+def _linux_candidates(em: Emulator, rel: rc.Release, machine: str) -> list[tuple[int, dict, str]]:
+    """(position in the release, file, method) for every file of this release that can be installed here. A catalog regex
+    for this system (`linux`, or `linux-x64` / `linux-arm64`) narrows the candidates when it is given, and a file it names
+    is taken for Linux even when its own name says nothing about the system."""
+    scope = em.asset.get(f"linux-{machine}") or em.asset.get("linux")
+    patterns = [] if scope is None else [scope] if isinstance(scope, str) else list(scope)
+    out = []
+    for index, asset in enumerate(rel.assets):
+        name = str(asset.get("name") or "")
+        explicit = bool(patterns) and any(re.search(one, name, re.IGNORECASE) for one in patterns)
+        method, _why = _method_here(asset, machine, explicit=explicit)
+        if not method:
+            continue
+        if patterns and not explicit:
+            continue
+        out.append((index, asset, method))
+    return out
+
+
+def _release_options(em: Emulator, rels: list[rc.Release], machine: str) -> tuple[list[InstallOption], str]:
+    """(every method the newest usable release offers, best first; why there is none when there isn't one).
+
+    The newest release that has anything for this PC wins, as it always has: an older AppImage must not pin a person to it
+    after the project stopped publishing one. Within that release the preference order above decides.
+    """
+    elsewhere: set[str] = set()
+    for rel in rels:
+        candidates = _linux_candidates(em, rel, machine)
+        if candidates:
+            return [InstallOption(method, rel, {**asset, "method": method}, manual=(method == PACKAGE))
+                    for _i, asset, method in sorted(candidates, key=_candidate_key)], ""
+        for asset in rel.assets:
+            if _method_here(asset, machine)[1] == "arch":
+                elsewhere.add(str(asset.get("name") or ""))
+    site = em.website or "the project site"
+    if elsewhere:
+        names = ", ".join(sorted(elsewhere)[:3])
+        return [], (f"{em.name} has no Linux build for {machine} in its recent releases. The Linux files it publishes are for "
+                    f"another CPU ({names}). Install a build for this PC yourself and use \"I already have it...\", or see {site}.")
+    return [], (f"{em.name} has no Linux build in its recent releases. Use {site} to install it by hand, or \"I already have it...\" "
+                f"if you already have it.")
+
+
 def latest_for(em: Emulator, store: rc.Store, force: bool = False) -> tuple[rc.Release, dict] | str:
     """(release, file) to install, or a sentence saying why there isn't one."""
-    if not em.available:
+    options, reasons = _plan(em, store, force)
+    usable = _installable(options)
+    return usable[0].pair() if usable else _reason(em, reasons)
+
+
+def check(em: Emulator, store: rc.Store, force: bool = False) -> tuple[tuple[rc.Release, dict] | str, list[InstallOption]]:
+    """(what Distill would install, every other way it could) from one lookup, so a page can offer the alternatives without
+    asking the source a second time."""
+    options, reasons = _plan(em, store, force)
+    usable = _installable(options)
+    return (usable[0].pair() if usable else _reason(em, reasons)), options
+
+
+def install_options(em: Emulator, store: rc.Store, force: bool = False) -> list[InstallOption]:
+    """Every way this emulator can be installed here, the preferred one first, and last the ones Distill will not do itself
+    (a distribution package it names but does not install). Empty when there is nothing to install, and `latest_for`/`check`
+    then say why in a sentence. Nobody is locked to the first: the rest of the list is what the page offers as alternatives."""
+    return _plan(em, store, force)[0]
+
+
+def _installable(options: list[InstallOption]) -> list[InstallOption]:
+    """The options Distill itself can carry out, best first: a .deb or .rpm the project publishes is not one of them."""
+    return [option for option in options if not option.manual]
+
+
+def _manual_reason(em: Emulator, option: InstallOption) -> str:
+    name = str(option.asset.get("name") or "a distribution package")
+    return (f"{em.name} publishes only a distribution package for Linux ({name}), and Distill does not install those: an "
+            f"immutable host cannot take a system package, and Distill cannot unpack a .deb or .rpm. Install it with your "
+            f"package manager, or see {em.website or 'the project site'}.")
+
+
+def _reason(em: Emulator, reasons: list[str]) -> str:
+    if em.status in LEGACY_STATUSES or not em.available:
         return em.notes or f"{em.name} has no download yet."
     if not for_this_os(em):
         return f"{em.name} has no build for {rc.platform_key()}."
-    if em.flatpak and rc.platform_key() == "linux":
-        return _flatpak_latest(em)
-    if em.build and rc.platform_key() == "linux":
-        return _build_latest(em)
+    if reasons:
+        return reasons[-1]  # the last thing learned is about the method furthest down the preference order (Flatpak, say)
+    return f"No download for {rc.platform_key()} in the recent releases. Use the website link."
+
+
+def hosts_linux_download(em: Emulator) -> bool:
+    """Does this entry describe a downloadable Linux build as well as a Flatpak? A Flatpak-only entry (MAME, Dolphin,
+    ScummVM) publishes no Linux release file of its own, and its page must not go looking for one."""
+    return any(str(key).startswith("linux") for key in em.asset) or bool(em.hosts)
+
+
+def _with_newest_release(em: Emulator, rels: list[rc.Release], store: rc.Store | None, force: bool) -> list[rc.Release]:
+    """The newest release first, pre-release included, for a project that publishes nothing but pre-releases.
+
+    GitHub calls a release "latest" only when it is not a pre-release, so for such a project `/releases/latest` answers
+    404 — that is not "no releases", and `rc.latest_release` answers it from the release list. Asking both keeps the
+    newest build in front and never turns that 404 into an empty page.
+    """
     try:
+        newest = rc.latest_release(em.repo, store, force)
+    except rc.RecompError:
+        return rels  # the list is still good: use it rather than fail the whole check
+    if newest is None or not newest.tag or any(r.tag == newest.tag for r in rels):
+        return rels
+    return [newest, *rels]
+
+
+def _plan(em: Emulator, store: rc.Store, force: bool = False) -> tuple[list[InstallOption], list[str]]:
+    """(options best first, reasons each route was refused). One lookup for the whole page: the preferred download, the
+    alternatives and the sentence to show when there are none all come from here."""
+    if em.status in LEGACY_STATUSES or not em.available or not for_this_os(em):
+        # Superseded and discontinued projects are checked before `available`: a copy Distill installs is still never made
+        # for them, whatever the rest of the entry says (their old address may redirect to a different project entirely).
+        return [], []
+    if rc.platform_key() != "linux":  # the preference order is about Linux hosts; elsewhere the choice is unchanged
         chan = channel_of(store, em)
-        found = choose(em, fetch_releases(em, store, force, chan), chan)
+        try:
+            found = choose(em, fetch_releases(em, store, force, chan), chan)
+        except rc.RecompError as exc:
+            return [], [str(exc)]
+        if not found:
+            return [], [f"No download for {rc.platform_key()} in the recent releases. Use the website link."]
+        return [InstallOption(_method_of(str(found[1].get("name") or "")) or PORTABLE, found[0], found[1])], []
+
+    chan = channel_of(store, em)
+    options: list[InstallOption] = []
+    reasons: list[str] = []
+    want_releases = bool(em.repo or em.adapter) and (not em.flatpak or hosts_linux_download(em))
+    # A Flatpak-only entry has no release feed to read: asking for one would be a request that can only come back empty.
+    try:
+        rels = fetch_releases(em, store, force, chan) if want_releases else []
     except rc.RecompError as exc:
-        return str(exc)
-    return found if found else f"No download for {rc.platform_key()} in the recent releases. Use the website link."
+        rels = []
+        reasons.append(str(exc))  # said plainly, and the Flatpak or source route below may still work
+    if rels and em.prerelease_only:
+        rels = _with_newest_release(em, rels, store, force)
+    if rels:
+        found, why = _release_options(em, _channel_order(rels, chan), rc.machine_key())
+        options += found
+        if why:
+            reasons.append(why)
+    if em.flatpak:
+        flat = _flatpak_latest(em)
+        if isinstance(flat, str):
+            reasons.append(flat)
+        else:
+            flat_rel, flat_asset = flat
+            options.append(InstallOption(FLATPAK, flat_rel, {**flat_asset, "method": FLATPAK}))
+    if em.build:
+        source = _build_latest(em)
+        if not isinstance(source, str):
+            source_rel, source_asset = source
+            options.append(InstallOption(SOURCE, source_rel, {**source_asset, "method": SOURCE}))
+    options.sort(key=lambda o: METHOD_ORDER.index(o.method))
+    if options and not _installable(options):  # nothing Distill can do itself: say so in plain words
+        reasons.append(_manual_reason(em, options[0]))
+    return options, reasons
 
 
 def _flatpak_latest(em: Emulator) -> tuple[rc.Release, dict] | str:
@@ -663,9 +1009,16 @@ def _build_latest(em: Emulator) -> tuple[rc.Release, dict] | str:
     return rc.Release(tag or "source", em.name, "", "", False, em.website, (asset,)), asset
 
 
+def _is_flatpak(em: Emulator, asset: dict) -> bool:
+    """Is this install a Flatpak? The chosen asset says so; an install made before the install policy existed has no method
+    on it, and then the entry's own Flatpak id is what it was."""
+    method = str(asset.get("method") or "")
+    return method == FLATPAK if method else rc.platform_key() == "linux" and bool(em.flatpak)
+
+
 def stamp_of(em: Emulator, rel: rc.Release, asset: dict) -> str:
     """What tells this build from the one before it, for emulators whose tag never changes."""
-    if rc.platform_key() == "linux" and em.flatpak:
+    if _is_flatpak(em, asset):
         return asset.get("flatpak_commit", "")
     if em.version_from == "asset":
         return asset["name"]
@@ -675,12 +1028,15 @@ def stamp_of(em: Emulator, rel: rc.Release, asset: dict) -> str:
 
 
 def label_of(em: Emulator, rel: rc.Release, asset: dict) -> str:
-    """The version as the person reads it."""
+    """The version as the person reads it. A project that publishes nothing but pre-releases says so in the label, so a
+    build is never mistaken for a stable version."""
     if em.version_from == "asset":
-        return re.sub(r"(\.tar\.\w+|\.\w+)$", "", asset["name"])
-    if em.version_from == "published_at":
-        return f"{rel.tag} ({rel.published})" if rel.published else rel.tag
-    return rel.tag
+        text = re.sub(r"(\.tar\.\w+|\.\w+)$", "", asset["name"])
+    elif em.version_from == "published_at":
+        text = f"{rel.tag} ({rel.published})" if rel.published else rel.tag
+    else:
+        text = rel.tag
+    return f"{text} (pre-release)" if rel.prerelease and em.prerelease_only else text
 
 
 def update_state(em: Emulator, inst: rc.Installed | None, latest) -> str:
@@ -692,7 +1048,7 @@ def update_state(em: Emulator, inst: rc.Installed | None, latest) -> str:
     if not isinstance(latest, tuple):
         return "unknown"
     rel, asset = latest
-    if rc.platform_key() == "linux" and em.flatpak:
+    if _is_flatpak(em, asset):
         commit = stamp_of(em, rel, asset)
         if inst.stamp and commit:
             return "update" if inst.stamp != commit else "current"
@@ -920,7 +1276,10 @@ def locate_exe(folder: Path, em: Emulator, plat: str = "", depth: int = EXE_DEPT
             when, size = st.st_mtime, st.st_size if p.is_file() else 0
         except OSError:
             when, size = 0.0, 0
-        return (len(stem & words), -len(p.relative_to(folder).parts), when, size)  # newest wins, so an update beats the old version beside it
+        # An AppImage is the build Distill prefers to install, so it is also the one it prefers to run when a download put
+        # both it and a plain binary in the folder: any AppImage inside an archive is registered as the launch target.
+        appimage = int(plat == "linux" and p.name.lower().endswith(".appimage"))
+        return (len(stem & words), appimage, -len(p.relative_to(folder).parts), when, size)  # newest wins, so an update beats the old version beside it
     return max(cands, key=score)
 
 
@@ -938,7 +1297,9 @@ def scan_folder(root: Path, catalog: Iterable[Emulator], plat: str = "", depth: 
     """Emulators already in `root`: a folder named like one (PCSX2, duckstation-v0.1, Dolphin Emulator) with its executable
     inside, or a loose AppImage / exe named like one. The first match for each emulator wins."""
     plat = plat or rc.platform_key()
-    matchers = {em.id: (em, _Matcher(em)) for em in catalog if for_this_os(em, plat)}
+    # A tool entry (AnyPS5's relinker) is not an emulator install: it is never looked for as one. An entry's optional
+    # extra is: the shadPS4 Qt launcher in its own folder is found, and belongs to the extra, not to shadPS4 itself.
+    matchers = {e.id: (e, _Matcher(e)) for e in all_entries(catalog) if for_this_os(e, plat) and e.kind != "tool"}
     found: dict[str, Found] = {}
 
     def best(name: str) -> Emulator | None:
@@ -1054,13 +1415,21 @@ def link(store: rc.Store, em: Emulator, path: Path, plat: str = "") -> Found:
     return f
 
 
-def launch(em: Emulator | None, inst: rc.Installed) -> None:
-    """Linked Windows executables need Wine too; installed shell launchers already provide it."""
-    if rc.platform_key() == "linux" and em is not None and not em.available:
+def launch(em: Emulator | None, inst: rc.Installed, store: rc.Store | None = None, cli: bool = False) -> None:
+    """Start an install. Linked Windows executables need Wine too; installed shell launchers already provide it.
+
+    When the entry has an optional extra that is preferred for launching and the person has it installed (shadPS4's Qt
+    launcher), that is what starts: the emulator's own program stays exactly where it is, and `cli=True` starts it
+    instead, so a command-line launch is always available.
+    """
+    if rc.platform_key() == "linux" and em is not None and not launchable(em):
         raise rc.RecompError(em.notes or f"{em.name} is unavailable.")
+    if em is not None and store is not None and not cli:
+        inst = installed_companion(em, store) or inst
     exe = inst.exe_path()
     if rc.platform_key() != "linux" or em is None or not em.wine or exe.suffix.lower() != ".exe":
-        rc.launch(inst)
+        env = appimage_env(exe)  # None for everything that isn't an AppImage, so an ordinary launch passes nothing
+        rc.launch(inst) if env is None else rc.launch(inst, env=env)
         return
     if not exe.exists():
         raise rc.RecompError("The emulator's files are missing. Find installed or link it again.")
@@ -1070,6 +1439,34 @@ def launch(em: Emulator | None, inst: rc.Installed) -> None:
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except OSError as exc:
         raise rc.RecompError(f"Couldn't start it: {exc}") from exc
+
+
+APPIMAGE_FUSE2_DIRS = ("/usr/lib64", "/usr/lib", "/lib64", "/lib", "/usr/lib/x86_64-linux-gnu", "/usr/lib/aarch64-linux-gnu")
+
+
+def appimage_fuse2() -> bool:
+    """Does this PC have the FUSE 2 library an AppImage mounts itself with? Fedora 41 (and so Bazzite and Silverblue) and
+    newer no longer ship it, and adding it is a system package change an immutable host does not allow Distill to make."""
+    if shutil.which("fusermount") is None:
+        return False
+    return any((Path(directory) / "libfuse.so.2").exists() for directory in APPIMAGE_FUSE2_DIRS)
+
+
+def appimage_env(exe: Path, environ: dict | None = None) -> dict | None:
+    """The environment an AppImage needs here, or None when it needs nothing extra.
+
+    Without FUSE 2 an AppImage can still run: the AppImage runtime itself unpacks it to a temporary folder and starts it
+    from there when APPIMAGE_EXTRACT_AND_RUN=1 is set. That is what lets Distill install and start an AppImage emulator on
+    an immutable host, without asking the person to layer a package over their OS. The environment is handed to
+    `subprocess.Popen`, so `hostenv` still strips this application's own library paths out of it.
+    """
+    if rc.platform_key() != "linux" or not str(exe).lower().endswith(".appimage"):
+        return None
+    if appimage_fuse2():
+        return None
+    env = dict(os.environ if environ is None else environ)
+    env["APPIMAGE_EXTRACT_AND_RUN"] = "1"
+    return env
 
 
 def unlink(store: rc.Store, em: Emulator) -> None:
@@ -1271,16 +1668,19 @@ class EmulatorInstaller(rc.Installer):
                                  "Fake copies of this project are circulating with malware in them.")
 
     def install(self, em, rel: rc.Release, asset: dict) -> rc.Installed:
-        """Flatpak apps and Wine-only Windows programs don't install like a plain download: both are routed here."""
+        """Which kind of install this is comes from the method the install policy chose for the file: a Flatpak and a
+        Wine-wrapped Windows program don't install like a plain download. A file with no method on it (an install started
+        from a listing cached before the policy existed) keeps the old routing, which reads the entry itself."""
         if rc.platform_key() == "linux":
             self._guard(em)
-        if rc.platform_key() == "linux" and em.build:
-            raise rc.RecompError(f"Use Build from source to install or update {em.name}.")
-        if rc.platform_key() == "linux" and em.flatpak:
-            return self._install_flatpak(em, rel)
-        if rc.platform_key() == "linux" and em.wine:
-            self._need_wine(em)  # refuse before a 20 MB download, not after it
-            return self._wrap_in_wine(em, super().install(em, rel, asset))
+            method = str(asset.get("method") or "")
+            if method == FLATPAK or (not method and em.flatpak):
+                return self._install_flatpak(em, rel)
+            if method == SOURCE or (not method and em.build):
+                raise rc.RecompError(f"Use Build from source to install or update {em.name}.")
+            if em.wine:  # a Windows program: unpacked, then started through Wine by a launcher written beside it
+                self._need_wine(em)  # refuse before a 20 MB download, not after it
+                return self._wrap_in_wine(em, super().install(em, rel, asset))
         return super().install(em, rel, asset)
 
     def _install_flatpak(self, em, rel: rc.Release) -> rc.Installed:
@@ -1393,10 +1793,18 @@ def missing_for_library(catalog: Iterable[Emulator], store: rc.Store, counts: di
 
 
 def status_text(em: Emulator, inst: rc.Installed | None, latest) -> tuple[str, str]:
-    """(code, short text) for the list: code is one of unavailable | missing | gone | current | update | unknown."""
-    if not downloadable(em):
-        return "unavailable", "No download yet" if em.available is False else f"Not on {rc.platform_key()}"
+    """(code, short text) for the list: code is one of unavailable | missing | gone | current | update | unknown, or the
+    project's own state (superseded | discontinued) when there is nothing to download and nothing installed."""
+    legacy = em.status in LEGACY_STATUSES
+    if em.kind == "tool":  # there is no emulator here to install or start: the page explains what the tool does instead
+        return "unavailable", "Tool, not an emulator"
+    if not for_this_os(em):
+        return "unavailable", f"Not on {rc.platform_key()}"
+    if not em.available and not legacy:
+        return "unavailable", "No download yet"
     if inst is None:
+        if legacy:
+            return em.status, "Superseded" if em.status == "superseded" else "Discontinued"
         return "missing", "Not installed"
     if not inst.exe_path().exists():
         return "gone", "Files missing"

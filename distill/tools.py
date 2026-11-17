@@ -94,6 +94,7 @@ class ToolManager:
     # event prefix, tool name, origin, its folder under ./tools, its pre-v8.5 folder, release-tag regex, exe name
     KEY = NAME = SOURCE = SUBDIR = TAG_RE = EXE_NAME = ""
     WINDOWS_ONLY = True  # False: the tool has official builds for every platform, so it is downloaded everywhere
+    BUILD = ""  # set to a source_builds recipe key when the tool has to be compiled instead of downloaded
     USER_AGENT = f"{APP_NAME}-updater"
 
     def __init__(self, emit: Callable[[tuple], None]):
@@ -1434,12 +1435,16 @@ class NscbManager(_OwnCopyMixin, ToolManager):
 class HactoolnetManager(_OwnCopyMixin, ToolManager):
     """hactoolnet (LibHac's command-line tool: opens NSP / XCI / NCA files and extracts their ExeFS and RomFS with your
     keys) from the newest release of Thealexbarney/LibHac. It is a .NET program, so the .NET runtime must be installed.
-    The package is kept whole, DLLs and all. A copy in ./tools/hactoolnet (or on PATH) is used as is."""
+    The package is kept whole, DLLs and all. A copy in ./tools/hactoolnet (or on PATH) is used as is.
+
+    That project has left GitHub, so there is no release to fetch any more; on Linux the tool box compiles the
+    maintained fork instead (BUILD, see source_builds.TOOL_RECIPES)."""
 
     KEY, NAME, SOURCE = "hactoolnet", "hactoolnet", "Thealexbarney/LibHac"
     SUBDIR, TAG_RE = "hactoolnet", r"v?\d+(?:\.\d+)+"
     EXE_NAME = "hactoolnet.exe" if sys.platform == "win32" else "hactoolnet"
     WINDOWS_ONLY = False
+    BUILD = "hactoolnet"  # no downloads are published any more: the app compiles the maintained fork
     API_URL = "https://api.github.com/repos/Thealexbarney/LibHac/releases/latest"
     LOCAL_NAMES = ("hactoolnet.exe", "hactoolnet")
     PATH_NAMES = ("hactoolnet",)
@@ -1460,8 +1465,18 @@ class HactoolnetManager(_OwnCopyMixin, ToolManager):
 
     def _latest_release(self) -> Release:
         headers = github_headers({"User-Agent": self.USER_AGENT, "Accept": "application/vnd.github+json"})
-        with urllib.request.urlopen(urllib.request.Request(self.API_URL, headers=headers), timeout=10) as resp:
-            data = json.load(resp)
+        try:
+            with urllib.request.urlopen(urllib.request.Request(self.API_URL, headers=headers), timeout=10) as resp:
+                data = json.load(resp)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                # Thealexbarney/LibHac, the project that published hactoolnet, is no longer on GitHub: there is no
+                # download to offer anyone, on any system. Say so instead of reporting a network error.
+                raise ReleaseUnavailable(
+                    "hactoolnet has no downloadable build any more: its project (Thealexbarney/LibHac) left GitHub. "
+                    "Press Build to compile the maintained fork (git.ryujinx.app/projects/LibHac) - or select a "
+                    "hactoolnet you built yourself with Browse. Switch 1 NSZ/XCZ work does not need it.") from exc
+            raise
         tag = data["tag_name"]
         if not re.fullmatch(self.TAG_RE, tag):
             raise RuntimeError(f"unexpected release tag {tag!r}")
@@ -1472,8 +1487,8 @@ class HactoolnetManager(_OwnCopyMixin, ToolManager):
         if not found:
             found = [a for a in assets if self._portable(a)]  # needs the .NET runtime, which _probe says when it is missing
         if not found:
-            raise ReleaseUnavailable("No hactoolnet download for this system. Get it from "
-                                     "github.com/Thealexbarney/LibHac/releases, or select hactoolnet yourself.")
+            raise ReleaseUnavailable("No hactoolnet download for this system. Press Build to compile the maintained "
+                                     "fork (git.ryujinx.app/projects/LibHac), or select hactoolnet yourself.")
         asset = found[0]
         return Release(tag, asset["name"], asset["browser_download_url"], asset.get("size", 0), _published_digest(asset))
 
@@ -1596,3 +1611,26 @@ class NupManager(_OwnCopyMixin, ToolManager):
         if rc != 0 or "nup" not in text.lower():
             raise RuntimeError(f"nup did not run: {(text.strip().splitlines() or [''])[-1]}")
         return text
+
+
+# ---- the whole set, for callers that work by key (the Settings tool box) --------------------------------------
+def managers() -> tuple[type, ...]:
+    """Every ToolManager subclass that names a tool, found rather than listed a second time."""
+    found, pending = [], list(ToolManager.__subclasses__())
+    while pending:
+        cls = pending.pop()
+        pending.extend(cls.__subclasses__())
+        if cls.KEY:
+            found.append(cls)
+    return tuple(found)
+
+
+def manager_for(key: str):
+    """The manager class for a tool key, or None."""
+    return next((cls for cls in managers() if cls.KEY == key), None)
+
+
+def build_recipe(key: str) -> str:
+    """The source_builds recipe for a tool that has to be compiled ('' when it is downloaded or supplied by hand)."""
+    cls = manager_for(key)
+    return getattr(cls, "BUILD", "") if cls else ""

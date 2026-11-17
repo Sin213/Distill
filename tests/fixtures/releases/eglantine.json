@@ -1,0 +1,168 @@
+[
+ {
+  "tag_name": "daily-20261117",
+  "name": "Eglantine Build 17/11/2026",
+  "body": "Automatic daily build of `nx2-experimental` at `a01c9c1`.\n\n## Changes since the previous daily build\n\n- video_core: restore brace closing the frame dump buffer capture block (`532ee49d4e`)\n- video_core: restore brace closing the frame dump buffer capture block (`d97c3e62bd`)\n- video_core: fix MSVC C4293 shift warning and ShaderHashes lookup (`dc1e78d5ed`)\n- video_core: fix MSVC C4293 shift warning",
+  "published_at": "2026-11-17T12:14:15Z",
+  "prerelease": true,
+  "draft": false,
+  "html_url": "https://github.com/Eglantine-Community/Eglantine/releases/tag/daily-20261117",
+  "assets": [
+   {
+    "name": "eglantine-linux-aarch64-pgo.AppImage",
+    "size": 64186888,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-aarch64-pgo.AppImage",
+    "digest": "sha256:a6a56a708f969f9318c3a2faab805b1d1f5ebecbf6139c010e9bbd70cb5c203e"
+   },
+   {
+    "name": "eglantine-linux-aarch64-pgo.tar.gz",
+    "size": 36306167,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-aarch64-pgo.tar.gz",
+    "digest": "sha256:e50fdc1c3d949d5d001a71e0aa74acdc96499dee2cdda38ce29ae5920e8b336d"
+   },
+   {
+    "name": "eglantine-linux-aarch64.AppImage",
+    "size": 68971016,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-aarch64.AppImage",
+    "digest": "sha256:15f53cada06f25ee734d3272773337312c8f6d83651ea6db403d4bc03dbc4cb6"
+   },
+   {
+    "name": "eglantine-linux-aarch64.tar.gz",
+    "size": 41690321,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-aarch64.tar.gz",
+    "digest": "sha256:47a26171b022bfa39ba4c46c815faba75b0b1bdcaa394918d51dc4e5be3a5b52"
+   },
+   {
+    "name": "eglantine-linux-x86_64-pgo.AppImage",
+    "size": 66980344,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-x86_64-pgo.AppImage",
+    "digest": "sha256:966de63c646f2a67abd98405e3edfb098fef81a040630102e538dbdff8f365b7"
+   },
+   {
+    "name": "eglantine-linux-x86_64-pgo.tar.gz",
+    "size": 38646054,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-x86_64-pgo.tar.gz",
+    "digest": "sha256:d9619c9fa533692dd95f97596d28f7915a5928011bdd65b01ece2e1bdb9c165c"
+   },
+   {
+    "name": "eglantine-linux-x86_64.AppImage",
+    "size": 72759800,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-x86_64.AppImage",
+    "digest": "sha256:2132404aaa49ccac953579dcd16d0ef92f8d962db7ec71089ccf69a41aee8530"
+   },
+   {
+    "name": "eglantine-linux-x86_64.tar.gz",
+    "size": 45002858,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-linux-x86_64.tar.gz",
+    "digest": "sha256:de0365be35ff741f1d1c8952d7e4e11d41ec1c41bde61156d2933de58008d970"
+   },
+   {
+    "name": "eglantine-macos-arm64.dmg",
+    "size": 87267837,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-macos-arm64.dmg",
+    "digest": "sha256:3ac7637f1a33c90ed82afb15d228424be0959222ea6099652acc1eace9137695"
+   },
+   {
+    "name": "eglantine-macos-arm64.zip",
+    "size": 78760280,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-macos-arm64.zip",
+    "digest": "sha256:5763720e8fe4f038a94dd3fd2d11b86303da96b665815028c79182d3e7fb31c2"
+   },
+   {
+    "name": "eglantine-windows-x86_64-pgo.zip",
+    "size": 72276712,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-windows-x86_64-pgo.zip",
+    "digest": "sha256:4853a58decaaf749adc26a2fcc2887215db1df395f4c15aa1f89e663171c8b68"
+   },
+   {
+    "name": "eglantine-windows-x86_64.zip",
+    "size": 115372811,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/daily-20261117/eglantine-windows-x86_64.zip",
+    "digest": "sha256:4c1e781a48cf7b6f7514deab6023ae8b456ae0fbcea12c02f0560d23fcfbf79e"
+   }
+  ]
+ },
+ {
+  "tag_name": "v0.1.0-rc4",
+  "name": "Eglantine v0.1.0-rc4",
+  "body": "> **Release candidate of 0.1.0.** Please test it and report problems before the final release.\r\n\r\n\r\n- Initial release candidate\r\n\r\n## What's Changed\r\n* Use Switchbrew's official names for Switch 2 HLE services and commands by @Takoroka in https://github.com/Eglantine-Community/Eglantine/pull/756\r\n* dist: install Linux desktop files under dev.eglantine.eglantine by @yourlin in https://github.com/Eg",
+  "published_at": "2026-11-15T02:27:19Z",
+  "prerelease": false,
+  "draft": false,
+  "html_url": "https://github.com/Eglantine-Community/Eglantine/releases/tag/v0.1.0-rc4",
+  "assets": [
+   {
+    "name": "eglantine-linux-aarch64-pgo.AppImage",
+    "size": 64133640,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-aarch64-pgo.AppImage",
+    "digest": "sha256:f66b548597c9f19dbee8489b77f00bd755f1b4b662ace45a334a632cafd177d1"
+   },
+   {
+    "name": "eglantine-linux-aarch64-pgo.tar.gz",
+    "size": 36233326,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-aarch64-pgo.tar.gz",
+    "digest": "sha256:6cdc241d28f9ea62cdcf06c7a813d7f9416505e59ba6a13ec14bcc497c4b8d71"
+   },
+   {
+    "name": "eglantine-linux-aarch64.AppImage",
+    "size": 68958728,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-aarch64.AppImage",
+    "digest": "sha256:45cb522a4e83587f9daa32452a1f32b7bd4b4f37279f32724768cffe0dce69ea"
+   },
+   {
+    "name": "eglantine-linux-aarch64.tar.gz",
+    "size": 41586145,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-aarch64.tar.gz",
+    "digest": "sha256:bd8bec5f01d31f3ba47eeda7180fcfd43ad564c2e2ccb7ad76416a059dbc6c9f"
+   },
+   {
+    "name": "eglantine-linux-x86_64-pgo.AppImage",
+    "size": 66918904,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-x86_64-pgo.AppImage",
+    "digest": "sha256:e5993d0e9e7aba3aeee693906838f43ec537e4793280dd572f3712f74abaf283"
+   },
+   {
+    "name": "eglantine-linux-x86_64-pgo.tar.gz",
+    "size": 38567248,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-x86_64-pgo.tar.gz",
+    "digest": "sha256:6751dc2a5fab9ffd43b7c70e38b592662ad95c53b67b12110635041a4b7827df"
+   },
+   {
+    "name": "eglantine-linux-x86_64.AppImage",
+    "size": 72649208,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-x86_64.AppImage",
+    "digest": "sha256:c653d6497ace1efb3a7f12af56fd59517e3a5a2c77a7b702773d6febf5a2ed17"
+   },
+   {
+    "name": "eglantine-linux-x86_64.tar.gz",
+    "size": 44893090,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-linux-x86_64.tar.gz",
+    "digest": "sha256:8ca3db4ab34c0c6e1932928a77d06fbffa10c0e97a765ae1aaebc3273535095f"
+   },
+   {
+    "name": "eglantine-macos-arm64.dmg",
+    "size": 87311086,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-macos-arm64.dmg",
+    "digest": "sha256:bdf17d916d098611d9a1d63ad4a305e69aa4767b51e3873c6f3048930505f1d4"
+   },
+   {
+    "name": "eglantine-macos-arm64.zip",
+    "size": 78676412,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-macos-arm64.zip",
+    "digest": "sha256:69202521a18721bb1dfdd2239fc2cf24391aa8ded95ba7507d2af4ce9e60b862"
+   },
+   {
+    "name": "eglantine-windows-x86_64-pgo.zip",
+    "size": 73050762,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-windows-x86_64-pgo.zip",
+    "digest": "sha256:c15e0edce723cbbe4d8d3d02604cfc9fc037ec41af3531979cae16c80abec473"
+   },
+   {
+    "name": "eglantine-windows-x86_64.zip",
+    "size": 115432810,
+    "browser_download_url": "https://github.com/Eglantine-Community/Eglantine/releases/download/v0.1.0-rc4/eglantine-windows-x86_64.zip",
+    "digest": "sha256:32d5c0179681e5c2e23f3b6103185ca43d08f336357bc5482119fcbd3bb0252b"
+   }
+  ]
+ }
+]

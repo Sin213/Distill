@@ -533,6 +533,59 @@ class WindowSmokeTests(WindowTestCase, IsolatedSoundtrackFiles):
                 self.assertEqual(list(win.em_cards), ids)
                 self.assertTrue(all(isinstance(c, EmulatorTile) for c in win.em_cards.values()))
 
+    def test_the_anyps5_page_explains_a_tool_and_offers_no_emulator_install(self):
+        import tempfile
+        from pathlib import Path
+
+        from distill import recomps as rc
+
+        td = tempfile.TemporaryDirectory(prefix="distill_anyps5_ui_")
+        self.addCleanup(td.cleanup)
+        with mock.patch.object(rc, "ROOT", Path(td.name)), \
+                mock.patch.object(rc, "cache_root", return_value=Path(td.name)):
+            win = self.make_window()
+            self.addCleanup(win.close)
+            with mock.patch("threading.Thread.start", lambda self: None):
+                win._nav_click("emus")
+                win._em_show_detail("anyps5")
+                self.assertEqual(win.emd_title.text(), "AnyPS5")
+                self.assertFalse(win.emd_tool_card.isHidden())  # what it does, how it is set up, what it needs
+                body = win.emd_tool_body.toPlainText()
+                self.assertIn("relinker", body)
+                self.assertIn("Setup on Linux", body)
+                self.assertIn("Setup on Windows", body)
+                self.assertIn("AVX2", body)  # what the PC has to have
+                self.assertIn("--windows", body)  # and how it is run
+                self.assertFalse(win.emd_open_tools.isHidden())
+                self.assertTrue(win.emd_main.isHidden())  # no install button: it is a tool, not an emulator
+                self.assertTrue(win.emd_launch.isHidden())
+                self.assertTrue(win.emd_notes_card.isHidden())  # there are no release notes for an emulator that isn't one
+                self.assertIn("not an emulator", win.emd_status.text().lower())
+
+    def test_the_shadps4_page_offers_its_qt_launcher_as_an_optional_extra(self):
+        import tempfile
+        from pathlib import Path
+
+        from distill import recomps as rc
+
+        td = tempfile.TemporaryDirectory(prefix="distill_shadps4_ui_")
+        self.addCleanup(td.cleanup)
+        with mock.patch.object(rc, "ROOT", Path(td.name)), \
+                mock.patch.object(rc, "cache_root", return_value=Path(td.name)):
+            win = self.make_window()
+            self.addCleanup(win.close)
+            with mock.patch("threading.Thread.start", lambda self: None):
+                win._nav_click("emus")
+                self.assertNotIn("shadps4-qtlauncher", win.em_cards)  # it is an extra, never a tile of its own
+                win._em_show_detail("shadps4")
+                self.assertFalse(win.emd_extras_card.isHidden())
+                self.assertEqual(win.emd_extras_lay.count(), 1)
+                row = win.emd_extras_lay.itemAt(0).widget()
+                texts = [w.text() for w in row.findChildren(type(win.emd_open_tools)) if hasattr(w, "text")]
+                self.assertTrue(any("Install" in t for t in texts), texts)
+                labels = [w.text() for w in row.findChildren(type(win.emd_status))]
+                self.assertTrue(any("PRE-RELEASE" in t for t in labels), labels)  # it is labelled, not passed off as stable
+
     def test_an_emulator_tile_shows_status_and_the_buttons_that_apply(self):
         from PySide6.QtGui import QColor
 
@@ -3321,6 +3374,88 @@ class WindowSmokeTests(WindowTestCase, IsolatedSoundtrackFiles):
         with mock.patch.object(type(win), "_st_run_search", lambda self, text, ctx: searched.append((text, ctx[0]))):
             win._gm_tool_sound([gid])  # one game: the Soundtrack button's search, with the game's name in the search box and the game remembered
         self.assertEqual((win.current_page, searched), ("sound", [("Game", gid)]))
+
+
+    def test_the_emulator_page_offers_the_other_install_methods_and_installs_the_chosen_one(self):
+        """A project that publishes an AppImage and a .tar.gz can be installed either way: the page offers both, and the
+        Install button uses the one chosen rather than always the first."""
+        import tempfile
+        from pathlib import Path
+        from distill import emulators as em, recomps as rc
+        from distill.ui import emulator_page
+
+        td = tempfile.TemporaryDirectory(prefix="distill_em_methods_")
+        self.addCleanup(td.cleanup)
+        root = Path(td.name)
+        with mock.patch.object(rc, "ROOT", root), mock.patch.object(rc, "cache_root", return_value=root), \
+                mock.patch.object(rc, "platform_key", return_value="linux"):
+            win = self.make_window()
+            self.addCleanup(win.close)
+            em.set_emulators_root(win.em_store, root / "emus")
+            e = em.Emulator("lichii", "Lichii", "Switch 2", repo="zortos293/Lichii", trusted_owner="zortos293",
+                            exe=r"(^|/)lichii[^/]*\.AppImage$")
+            release = rc.Release("build-316", "Lichii build 316", "", "2026-11-16", False,
+                                 "https://github.com/zortos293/Lichii/releases/tag/build-316", ())
+            plain = {"name": "lichii-linux-x86_64.AppImage", "url": "https://github.com/zortos293/Lichii/a", "size": 1,
+                     "method": em.APPIMAGE}
+            pgo = {"name": "lichii-linux-x86_64-pgo.AppImage", "url": "https://github.com/zortos293/Lichii/b", "size": 1,
+                   "method": em.APPIMAGE}
+            tarball = {"name": "lichii-linux-x86_64.tar.gz", "url": "https://github.com/zortos293/Lichii/c", "size": 1,
+                       "method": em.PORTABLE}
+            options = [em.InstallOption(em.APPIMAGE, release, plain), em.InstallOption(em.APPIMAGE, release, pgo),
+                       em.InstallOption(em.PORTABLE, release, tarball)]
+            win._em_catalog = [e]
+            win._em_by_id = {e.id: e}
+            win._em_current = e.id
+            win.em_views.setCurrentIndex(1)
+            win._apply_events([("emu_latest", e.id, (release, plain), options)])
+            self.assertEqual([win.emd_method.itemText(i) for i in range(win.emd_method.count())],
+                             ["AppImage — lichii-linux-x86_64.AppImage", "AppImage — lichii-linux-x86_64-pgo.AppImage",
+                              "Portable archive — lichii-linux-x86_64.tar.gz"])
+            self.assertFalse(win.emd_method.isHidden())  # more than one way to install it, so the chooser is shown
+            self.assertEqual(win.emd_method.currentIndex(), 0)  # the preferred method is the one already selected
+            win._em_method_picked(2)
+            self.assertEqual(win._em_chosen(e)[1]["name"], "lichii-linux-x86_64.tar.gz")
+            started = []
+
+            class FakeThread:
+                def __init__(self, target=None, args=(), daemon=False, **_kw):
+                    started.append(args)
+
+                def start(self) -> None:
+                    pass
+
+            with mock.patch.object(emulator_page.threading, "Thread", FakeThread):
+                win._em_begin_install(e)
+            self.assertEqual(started[-1][2]["name"], "lichii-linux-x86_64.tar.gz")  # the choice, not the default
+            self.assertEqual(started[-1][2]["method"], em.PORTABLE)
+
+    def test_the_detail_page_sends_a_superseded_emulator_to_the_one_that_replaced_it(self):
+        import tempfile
+        from pathlib import Path
+        from distill import emulators as em, recomps as rc
+
+        td = tempfile.TemporaryDirectory(prefix="distill_em_superseded_")
+        self.addCleanup(td.cleanup)
+        root = Path(td.name)
+        with mock.patch.object(rc, "ROOT", root), mock.patch.object(rc, "cache_root", return_value=root), \
+                mock.patch.object(rc, "platform_key", return_value="linux"):
+            win = self.make_window()
+            self.addCleanup(win.close)
+            old = em.Emulator("lime3ds", "Lime3DS", "Nintendo 3DS", status="superseded", replaced_by="azahar", available=False,
+                              notes="Lime3DS is superseded: its repository now redirects to Azahar.")
+            new = em.Emulator("azahar", "Azahar", "Nintendo 3DS", repo="azahar-emu/azahar", trusted_owner="azahar-emu",
+                              exe=r"(^|/)azahar[^/]*\.AppImage$")
+            win._em_catalog = [new, old]
+            win._em_by_id = {new.id: new, old.id: old}
+            win._em_current = old.id
+            win.em_views.setCurrentIndex(1)
+            win._em_refresh_detail()
+            self.assertEqual(win.emd_main.text(), "Open Azahar")  # nothing to download here: go where the project went
+            self.assertTrue(win.emd_main.isEnabled())
+            self.assertIn("superseded", win.emd_state.text().lower())  # and the reason is on the page
+            win._em_main_action()
+            self.assertEqual(win._em_current, "azahar")
 
 
 if __name__ == "__main__":

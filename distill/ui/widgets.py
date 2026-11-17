@@ -871,10 +871,19 @@ class PathRow(QWidget):
         row.setSpacing(10)
         row.addWidget(self.edit, 1)
         row.addWidget(self.button)
+        self.row = row  # kept so a caller can add a button of its own beside Browse...
         outer.addWidget(self.label)
         outer.addLayout(row)
         self.setAcceptDrops(True)  # drop a folder (or, for a program row, a file) straight onto the row
         self.edit.setAcceptDrops(False)
+
+    def add_button(self, text: str, tip: str = "") -> QPushButton:
+        """One more button beside Browse..., for an action this row has on its own (building a tool, say)."""
+        button = QPushButton(text)
+        if tip:
+            button.setToolTip(tip)
+        self.row.addWidget(button)
+        return button
 
     def _dropped(self, event) -> Path | None:
         urls = [u for u in event.mimeData().urls() if u.isLocalFile()]
@@ -935,6 +944,10 @@ class ToolRow(QWidget):
         self.status = hint("", live=True)
         lay.addWidget(self.path)
         lay.addWidget(self.status)
+
+    def add_action(self, text: str, tip: str) -> QPushButton:
+        """A button of this tool's own, beside Browse...: used for tools that must be built rather than downloaded."""
+        return self.path.add_button(text, tip)
 
 
 class ToolMarkers(QWidget):

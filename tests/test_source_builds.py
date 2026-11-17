@@ -22,6 +22,18 @@ class FamilyTests(unittest.TestCase):
         self.assertEqual(builds.family_of("ID=gentoo\n"), "")
         self.assertEqual(builds.family_of(""), "")
 
+    def test_the_opensuse_family_is_recognised(self):
+        self.assertEqual(builds.family_of('ID="opensuse-tumbleweed"\nID_LIKE="opensuse suse"\n'), "opensuse")
+        self.assertEqual(builds.family_of('ID="opensuse-leap"\nID_LIKE="opensuse suse"\n'), "opensuse")
+        self.assertEqual(builds.family_of('ID="opensuse-slowroll"\n'), "opensuse")
+        self.assertEqual(builds.family_of('ID="sles"\nID_LIKE="suse"\n'), "opensuse")
+
+    def test_the_atomic_opensuse_variant_is_still_opensuse(self):
+        """MicroOS/Aeon report ID_LIKE 'opensuse suse' and have a read-only root: the script's atomic branch must
+        catch them before any live package install."""
+        self.assertEqual(builds.family_of("ID=opensuse-microos\nID_LIKE=\"opensuse suse\"\n"), "opensuse")
+        self.assertEqual(builds.family_of("ID=opensuse-aeon\nID_LIKE=\"opensuse suse\"\n"), "opensuse")
+
 
 @POSIX_ONLY  # bash
 class ScriptTests(TempDirTest):
@@ -207,6 +219,76 @@ else:
         atomic = text.index("/run/ostree-booted")
         deps = text.index("dnf install -y")
         self.assertLess(atomic, deps)  # the check comes before any package is installed
+
+    def test_the_opensuse_case_asks_zypper_for_the_verified_package_names(self):
+        """Every name here was checked against the Tumbleweed OSS x86_64 repository; openSUSE has no 'libfoo-dev'."""
+        text = builds.script_for("ares", self.tmp / "ares")
+        for expected in ("zypper install -y gcc gcc-c++", "gtk3-devel", "libcanberra-gtk3-module", "Mesa-libGL-devel",
+                         "libX11-devel", "libXrandr-devel", "alsa-devel", "libao-devel", "openal-soft-devel",
+                         "libpulse-devel", "systemd-devel", "SDL3-devel", "opensuse-tumbleweed"):
+            self.assertIn(expected, text)
+        zypper = next(line for line in text.splitlines() if "zypper install" in line and "SDL3-devel" not in line)
+        self.assertIn("Mesa-libGL-devel", zypper)
+        self.assertNotIn("libgl-dev", zypper)  # the Debian spelling must not leak into the zypper line
+
+    def test_the_atomic_hints_carry_the_same_packages_as_the_install_lines(self):
+        """A layered list that drifts from the installed one is worse than no list: compare the sets."""
+        installer_words = {"sudo", "dnf", "zypper", "install", "rpm-ostree", "transactional-update", "pkg", "echo"}
+
+        def packages(line: str) -> set[str]:
+            words = line.replace('"', " ").split()
+            return {word for word in words if not word.startswith("-") and word not in installer_words}
+
+        lines = [line.strip() for line in builds.script_for("ares", self.tmp / "ares").splitlines()]
+        for live, layered in (("dnf install", "rpm-ostree install"), ("zypper install", "transactional-update pkg install")):
+            installed = next((line for line in lines if live in line and "|| true" not in line), None)
+            hinted = next((line for line in lines if layered in line), None)
+            self.assertIsNotNone(installed, f"no live line for {live}")
+            self.assertIsNotNone(hinted, f"no layered hint for {layered}")
+            assert installed is not None and hinted is not None
+            self.assertEqual(packages(installed), packages(hinted), f"{layered} does not match {live}")
+
+
+class ToolBuildTests(TempDirTest):
+    """Tools that are no longer downloadable (hactoolnet) are compiled instead: same recipe machinery, but the
+    result is filed where the tool manager expects its downloads."""
+
+    def test_only_tools_with_a_recipe_offer_to_build(self):
+        from distill import tools
+        self.assertEqual(tools.build_recipe("hactoolnet"), "hactoolnet")
+        self.assertEqual(tools.build_recipe("chdman"), "")   # a distribution package or a hand-picked file
+        self.assertEqual(tools.build_recipe("nonsense"), "")
+
+    @POSIX_ONLY
+    def test_the_hactoolnet_script_is_valid_bash_and_files_itself_correctly(self):
+        root = self.tmp / "tools" / "hactoolnet"
+        script = builds.write_tool_script("hactoolnet", root)
+        self.assertTrue(script.stat().st_mode & 0o111)
+        check = subprocess.run(["bash", "-n", str(script)], capture_output=True, text=True)
+        self.assertEqual(check.returncode, 0, check.stderr)
+        text = script.read_text()
+        for expected in ("git.ryujinx.app/projects/LibHac", "master", "--self-contained true",
+                         "dotnet-install.sh", "current.txt", "hactoolnet"):
+            self.assertIn(expected, text)
+        self.assertIn("exit 0", text)  # a closed stdin must not look like a failure
+        # The v0.19.0 tag does not compile; the recipe must not be pinned to it.
+        self.assertNotIn("v0.19.0", text)
+
+    def test_a_built_tool_is_picked_up_like_a_downloaded_one(self):
+        from distill import tools
+        root = self.tmp / "tools" / "hactoolnet"
+        (root / "0.21.0").mkdir(parents=True)
+        exe = root / "0.21.0" / tools.HactoolnetManager.EXE_NAME
+        exe.write_bytes(b"#!/bin/sh\necho 'hactoolnet 0.21.0'\n")
+        exe.chmod(0o755)
+        (root / "current.txt").write_text("0.21.0")
+        manager = tools.HactoolnetManager(lambda _ev: None)
+        manager.root = root
+        found = manager.cached()
+        self.assertIsNotNone(found)
+        assert found is not None
+        self.assertEqual(found[0], "0.21.0")
+        self.assertEqual(found[1], exe)
 
 
 if __name__ == "__main__":

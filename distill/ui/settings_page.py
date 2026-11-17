@@ -3,17 +3,20 @@ from __future__ import annotations
 
 import shutil
 import sys
+import threading
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QAbstractButton, QApplication, QComboBox, QFrame,
-    QHBoxLayout, QLabel, QLineEdit, QListWidget, QPushButton,
+    QHBoxLayout, QLabel, QLineEdit, QListWidget, QMessageBox, QPushButton,
     QScrollArea, QSizePolicy, QSpinBox, QStackedWidget,
     QVBoxLayout, QWidget,
 )
 
 from .. import magnet, ytdlp
+from .. import source_builds as builds
+from .. import tools as toolmgr
 from ..constants import (
     PKG_LAYOUTS, PKG_MISSING_HINT,
     PKG_TOOLS, PS3_OUTPUTS, RVZ_DEFAULT_LEVEL,
@@ -266,6 +269,11 @@ class SettingsMixin:
             for key, label in tools.items():
                 row = ToolRow(label, LABEL_W)
                 self._register_tool_row(key, row)
+                if toolmgr.build_recipe(key) and sys.platform.startswith("linux"):
+                    # A tool with no downloads left (hactoolnet): compile it here instead.
+                    button = row.add_action("Build", f"{label} is no longer published as a download. Press Build to "
+                                                     "compile it from its maintained source - a terminal shows the work.")
+                    button.clicked.connect(lambda _checked=False, k=key: self._tool_build(k))
                 card.add(row)
             lay.addWidget(card)
         keys = Card("Switch keys")
@@ -447,6 +455,47 @@ class SettingsMixin:
         row.path.edit.textChanged.connect(lambda *_: self._refresh_nav_dots())
         if key == "ytdlp":
             row.path.edit.textChanged.connect(self._ytdlp_path_changed)
+
+    def _tool_build(self, key: str) -> None:
+        """Compile a tool that is no longer published as a download (hactoolnet), in a terminal of its own."""
+        cls = toolmgr.manager_for(key)
+        if cls is None or not cls.BUILD:
+            return
+        try:
+            root = cls._pick_root()
+            script = builds.start_tool(cls.BUILD, root)
+        except Exception as exc:  # no terminal program, no write permission, unknown recipe
+            QMessageBox.warning(self, f"Can't build {TOOLS[key][0]}", str(exc))
+            return
+        QMessageBox.information(
+            self, f"Building {TOOLS[key][0]}",
+            f"A terminal window is compiling {TOOLS[key][0]} now.\n\n"
+            "It fetches a private .NET SDK into the tool's own folder (about 200 MB, no password needed - that is why "
+            "it works on a system where nothing can be installed), then builds from source. Expect a few minutes.\n\n"
+            f"The script is saved at:\n{script}\n\n"
+            "This window notices when it finishes and fills the row in by itself.")
+        self._tool_build_watch(key, cls)
+
+    def _tool_build_watch(self, key: str, cls, tries: int = 240) -> None:
+        """Look for the built program every 10 seconds (40 minutes in all), then re-run its manager."""
+        def check(remaining: int) -> None:
+            try:
+                found = cls(lambda _ev: None).cached()
+            except Exception:
+                found = None
+            if found:
+                # The build ran in another process: hand the result to the manager that would have downloaded it.
+                target = getattr(self, "ui_q", None)
+                if target is not None:  # the usual path: the manager reports through the window's queue
+                    threading.Thread(target=cls(target.put).run, daemon=True).start()
+                else:  # nothing to talk to: fill the row in ourselves
+                    self._tool_path_found(key, portable_path(found[1]))
+                    self._set_tool_status(key, f"{TOOLS[key][0]} {found[0]} (built here)")
+                return
+            if remaining > 1:
+                QTimer.singleShot(10_000, lambda: check(remaining - 1))
+
+        QTimer.singleShot(10_000, lambda: check(tries))
 
     def _ytdlp_path_changed(self, text: str) -> None:
         """A yt-dlp the person picked (or typed) is the one downloads use; the app's own copy needs no setting."""

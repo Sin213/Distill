@@ -1,6 +1,6 @@
 {
- "version": "1.2",
- "last_updated": "2026-11-05",
+ "version": "1.3",
+ "last_updated": "2026-11-17",
  "emulators": [
   {
    "id": "retroarch",
@@ -15,7 +15,21 @@
    "aliases": [
     "retroarch"
    ],
-   "exe": "(^|/)retroarch\\.exe$|\\.AppImage$"
+   "exe": "(^|/)retroarch(\\.exe)?$",
+   "linux": {
+    "platforms": [
+     "windows",
+     "linux",
+     "macos"
+    ],
+    "flatpak": "org.libretro.RetroArch",
+    "asset": {
+     "linux": "RetroArch-linux-x86_64\\.7z$",
+     "windows": "RetroArch-windows-x86_64\\.7z$"
+    },
+    "exe": "(^|/)retroarch(\\.exe)?$",
+    "notes": "A frontend for emulators, game engines and media players, built on the libretro API. On Linux the official build is the 7z archive on buildbot.libretro.com - there is no AppImage, and no arm64 stable build. Distill installs that archive, or the Flathub app org.libretro.RetroArch, which is offered as the alternative."
+   }
   },
   {
    "id": "duckstation",
@@ -26,14 +40,21 @@
    "version_from": "published_at",
    "website": "https://www.duckstation.org/",
    "portable": "portable.txt",
-   "notes": "A source-available PlayStation emulator developed primarily by stenzek, featuring PGXP, upscaling, texture filtering, and run-ahead support.",
+   "notes": "A source-available PlayStation emulator developed primarily by stenzek, featuring PGXP, upscaling, texture filtering and run-ahead support. Its release tags roll (latest, preview) and are re-uploaded in place beside dated v0.1-* snapshots, all with the same files; the date is what names a build.",
    "systems": [
     "PlayStation"
    ],
    "aliases": [
     "duckstation-qt"
    ],
-   "exe": "duckstation-qt|\\.AppImage$"
+   "exe": "(^|/)duckstation-qt[^/]*\\.exe$|(^|/)DuckStation[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "DuckStation-(x64|x64-SSE2|arm64)\\.AppImage$"
+    },
+    "exe": "(^|/)DuckStation[^/]*\\.AppImage$|(^|/)duckstation-qt$",
+    "notes": "A source-available PlayStation emulator. On Linux the project publishes AppImages only, for x86_64 (plain and SSE2) and for arm64 - no tarball. Its tags roll: `latest` and `preview` are re-uploaded in place, beside dated v0.1-* snapshots, so an update can arrive without a new version number."
+   }
   },
   {
    "id": "pcsx2",
@@ -53,8 +74,16 @@
    "aliases": [
     "pcsx2-qt"
    ],
-   "exe": "(^|/)pcsx2-qt(\\.exe)?$|\\.AppImage$",
-   "notes": "A free and open-source PlayStation 2 emulator for Windows, Linux, and macOS supporting a high level of compatibility."
+   "exe": "(^|/)pcsx2-qt(\\.exe)?$|(^|/)pcsx2[^/]*\\.AppImage$",
+   "notes": "A free and open-source PlayStation 2 emulator for Windows, Linux, and macOS supporting a high level of compatibility.",
+   "linux": {
+    "asset": {
+     "linux": "pcsx2-v[0-9.]+-linux-appimage-x64-Qt\\.AppImage$"
+    },
+    "flatpak": "net.pcsx2.PCSX2",
+    "exe": "(^|/)pcsx2-qt$|(^|/)pcsx2[^/]*\\.AppImage$",
+    "notes": "An open-source PlayStation 2 emulator for Windows, Linux and macOS. On Linux the project publishes an AppImage for x86_64, and a Flatpak bundle beside it; Distill installs the AppImage and offers the Flathub app net.pcsx2.PCSX2 as the alternative. The nightly builds are pre-releases."
+   }
   },
   {
    "id": "rpcs3",
@@ -66,15 +95,24 @@
    "repo_by_platform": {
     "windows": "RPCS3/rpcs3-binaries-win",
     "linux": "RPCS3/rpcs3-binaries-linux",
-    "macos": "RPCS3/rpcs3-binaries-mac"
+    "macos": "RPCS3/rpcs3-binaries-mac",
+    "windows-arm64": "RPCS3/rpcs3-binaries-win-arm64",
+    "linux-arm64": "RPCS3/rpcs3-binaries-linux-arm64"
    },
    "notes": "An open-source PlayStation 3 emulator and debugger written in C++ for Windows, Linux, macOS, and FreeBSD.",
    "systems": [
     "PlayStation 3"
    ],
-   "exe": "(^|/)rpcs3(\\.exe)?$|\\.AppImage$",
+   "exe": "(^|/)rpcs3(\\.exe)?$|(^|/)rpcs3[^/]*\\.AppImage$",
    "version_from": "asset",
-   "portable_auto": false
+   "portable_auto": false,
+   "linux": {
+    "asset": {
+     "linux": "rpcs3-.*_linux64\\.AppImage$"
+    },
+    "exe": "(^|/)rpcs3$|(^|/)rpcs3[^/]*\\.AppImage$",
+    "notes": "An open-source PlayStation 3 emulator and debugger. On Linux the project publishes one AppImage per build (rpcs3-<version>_linux64.AppImage) and no tarball; the arm64 builds are published in a repository of their own. Distill installs the AppImage for this PC's CPU."
+   }
   },
   {
    "id": "shadps4",
@@ -93,7 +131,43 @@
    "aliases": [
     "shadps4"
    ],
-   "notes": "A free and open-source PlayStation 4 emulator written in C++ supporting Windows, Linux, and macOS."
+   "notes": "A free and open-source PlayStation 4 emulator written in C++ for Windows, Linux and macOS. The emulator itself takes a game on the command line; the optional shadPS4 Qt launcher is a separate project that adds a graphical front end for it.",
+   "exe": "(^|/)shadps4(\\.exe)?$",
+   "linux": {
+    "platforms": [
+     "windows",
+     "linux",
+     "macos"
+    ],
+    "asset": {
+     "linux": "shadps4-linux-sdl-[0-9.]+\\.zip$"
+    },
+    "exe": "(^|/)Shadps4[^/]*\\.AppImage$|(^|/)shadps4(\\.exe)?$",
+    "notes": "A free and open-source PlayStation 4 emulator. Its stable release v.0.21.0 publishes shadps4-linux-sdl-<version>.zip - the leading dot in the tag is the project's own - and that zip holds a single file, Shadps4-sdl.AppImage, which is what Distill installs and runs. There is no separate AppImage download: the AppImage is inside the zip. The command-line program is still there for launching a game directly, and the optional shadPS4 Qt launcher (a separate project, offered under Optional extras) is what starts when it is installed."
+   },
+   "extras": [
+    {
+     "id": "shadps4-qtlauncher",
+     "name": "shadPS4 Qt launcher",
+     "system": "PlayStation 4",
+     "group": "Sony",
+     "repo": "shadps4-emu/shadps4-qtlauncher",
+     "website": "https://shadps4.net/",
+     "status": "experimental",
+     "preferred_launch": true,
+     "prerelease_only": true,
+     "systems": [
+      "PlayStation 4"
+     ],
+     "asset": {
+      "linux": "shadPS4QtLauncher-linux-qt-.*\\.zip$",
+      "windows": "shadPS4QtLauncher-win64-qt-.*\\.zip$",
+      "macos": "shadPS4QtLauncher-macos-qt-.*\\.zip$"
+     },
+     "exe": "(^|/)shadPS4QtLauncher[^/]*\\.(AppImage|exe)$",
+     "notes": "The official graphical launcher for shadPS4, in a repository of its own. Pre-release, experimental software: the project's only release is marked pre-release, so expect it to break. It is a .zip whose Linux payload is an AppImage - Distill unpacks it and starts that. When it is installed, Launch starts the launcher; shadPS4 itself stays installed and `Launch without the launcher` still starts it."
+    }
+   ]
   },
   {
    "id": "kytyps5",
@@ -103,11 +177,31 @@
    "repo": "KytyPS5/KytyPS5",
    "trusted_owner": "KytyPS5",
    "website": "https://kytyps5.github.io/",
-   "verify": true,
-   "notes": "An experimental emulator for running PlayStation 4 and PlayStation 5 software and homebrew.",
+   "notes": "An experimental PlayStation 5 emulator (the project calls it a PS5 translation layer) for Windows, Linux and macOS. Releases are per-commit date-and-hash tags, not version numbers. The archive holds the graphical launcher `kyty_launcher` beside the emulator itself, `kyty_emulator`; Distill starts the launcher, which is what opens the window.",
    "systems": [
     "PlayStation 5"
-   ]
+   ],
+   "platforms": [
+    "windows",
+    "linux",
+    "macos"
+   ],
+   "channels": [
+    "nightly"
+   ],
+   "exe": "(^|/)kyty_launcher(\\.exe)?$",
+   "linux": {
+    "platforms": [
+     "windows",
+     "linux",
+     "macos"
+    ],
+    "asset": {
+     "linux": "KytyPS5-.*-Linux-x86_64\\.tar\\.gz$"
+    },
+    "exe": "(^|/)kyty_launcher$",
+    "notes": "An experimental PlayStation 5 emulator, published per commit as KytyPS5-<date>-<hash>-Linux-x86_64.tar.gz. The archive holds `kyty_launcher` (the graphical launcher Distill starts), `kyty_emulator` and `kyty_updater`, with its Qt libraries in `lib/`. There is no AppImage; the tar.gz is the official Linux build. Run the launcher, not `kyty_emulator`: the emulator program is started by it."
+   }
   },
   {
    "id": "anyps5",
@@ -116,11 +210,39 @@
    "group": "Sony",
    "repo": "boykopovar/AnyPS5",
    "trusted_owner": "boykopovar",
-   "active": false,
-   "verify": true,
-   "notes": "A conceptual repository targeting native-port layering for PlayStation 5 architecture.",
+   "kind": "tool",
+   "tool_key": "relinker",
+   "website": "https://boykopovar.github.io/AnyPS5/",
+   "platforms": [
+    "windows",
+    "linux",
+    "macos"
+   ],
    "systems": [
     "PlayStation 5"
+   ],
+   "aliases": [
+    "anyps5",
+    "relinker"
+   ],
+   "notes": "AnyPS5 is not an emulator. It converts an already extracted, decrypted PlayStation 5 executable into a native program for Linux, Windows or macOS and supplies the system libraries that program links against. The relinker belongs to Distill's own tools: Settings > Tools > AnyPS5 relinker installs it and its .prx libraries from the same official release, and a PS5 package extraction uses it when you pick the AnyPS5 target: it relinks source/eboot.bin and copies the libraries into libs/. Nothing is emulated, so a title AnyPS5 has not been pointed at does not run.",
+   "details": "**What it does.** AnyPS5 relinks a PlayStation 5 executable: it rewrites the ELF into the native format of the system you are on (Linux ELF, a Windows PE, a macOS Mach-O) and links it against the project's own implementations of the PS5 system libraries (`core/libs/prx`). The result is an ordinary program - no emulator, no interpreter and no separate runtime process.\n\n**How that differs from an emulator.** An emulator reads the console's code and reproduces the console while the game runs, so an unmodified game can be started in it. AnyPS5 does its work once, offline, on a file you give it, and what comes out runs natively; a title that has not been converted simply does not run, and there is no compatibility layer to fall back on. That is why this page has no Install button for an emulator.\n\n**Its part in Distill.** Settings > Tools holds *AnyPS5 relinker*, which fetches `relinker` and the `.prx` libraries from the same release (they must match) into `tools/anyps5/<version>/`. In the PS5 extraction, asking for the *AnyPS5* target runs it on `source/eboot.bin` after `pkg-to-anyps5` has unpacked the package, and copies its libraries into `libs/` beside the result.",
+   "setup": {
+    "linux": "Download `relinker-v0.1.5` and `prx-linux-v0.1.5.tar.gz` from the v0.1.5 release, unpack the libraries beside the relinker and `chmod +x relinker`. In Distill: Settings > Tools > AnyPS5 relinker does both. Then `relinker source/input.elf app.elf`, with the game's modules in `source/sce_module/`, `source/sce_modules/` or `source/prx/`.",
+    "windows": "Download `relinker-v0.1.5.exe` and `prx-windows-v0.1.5.zip`, unpack the libraries beside the relinker, then `relinker --windows source\\input.elf app.exe`. The output format is decided by `--windows`, never by the `.exe` in the name. In Distill: Settings > Tools > AnyPS5 relinker.",
+    "macos": "Only the relinker-only build is published for macOS, including Apple silicon: `relinker-v0.1.5` with `relinker --macos source/input.elf eboot`. Distill does not install it; take it from the release page."
+   },
+   "dependencies": [
+    "An extracted, decrypted PS5 ELF, with its bundled modules in sce_module/, sce_modules/ or prx/ - the relinker does not extract or decrypt packages (pkg-to-anyps5 does that first).",
+    "A CPU with the PS5's Zen 2 extensions the compiled code assumes: AVX2, FMA, F16C, BMI1, BMI2, LZCNT and MOVBE.",
+    "Nothing else: the relinker is one program, and the .prx system libraries are a separate archive from the same release."
+   ],
+   "usage": [
+    "relinker source/input.elf app.elf",
+    "relinker --windows source/input.elf app.exe",
+    "relinker --macos source/input.elf eboot",
+    "relinker --dry-run source/input.elf app.elf",
+    "tools/unwrap_self.py input.self output.elf"
    ]
   },
   {
@@ -135,7 +257,15 @@
    "systems": [
     "PSP"
    ],
-   "portable": "memstick/"
+   "portable": "memstick/",
+   "exe": "(^|/)PPSSPPSDL$|(^|/)PPSSPP[^/]*\\.exe$|(^|/)PPSSPP[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "PPSSPP-v[0-9.]+-anylinux-(x86_64|aarch64)\\.AppImage$"
+    },
+    "exe": "(^|/)PPSSPPSDL$|(^|/)PPSSPP[^/]*\\.AppImage$",
+    "notes": "An open-source PSP emulator. On Linux the project publishes an AppImage for x86_64 and one for aarch64 (each with a .zsync delta file); Distill installs the one for this PC. The AppImage carries the SDL build, which runs from the desktop or from a terminal, so the CLI form `PPSSPPSDL` still exists beside it."
+   }
   },
   {
    "id": "vita3k",
@@ -151,7 +281,15 @@
    ],
    "aliases": [
     "vita3k"
-   ]
+   ],
+   "exe": "(^|/)Vita3K(\\.exe)?$|(^|/)Vita3K[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "Vita3K-(x86_64|aarch64)\\.AppImage$"
+    },
+    "exe": "(^|/)Vita3K$|(^|/)Vita3K[^/]*\\.AppImage$",
+    "notes": "The first functional experimental PlayStation Vita emulator and debugger. Everything is published as one rolling `continuous` release: on Linux an AppImage for x86_64 and one for aarch64, beside ubuntu-*.zip archives. Distill installs the AppImage for this PC."
+   }
   },
   {
    "id": "dolphin",
@@ -165,7 +303,8 @@
    "portable": "portable.txt",
    "platforms": [
     "windows",
-    "macos"
+    "macos",
+    "linux"
    ],
    "notes": "An open-source emulator for GameCube and Wii games that supports high-definition rendering, network play, and modding tools.",
    "systems": [
@@ -176,15 +315,19 @@
     "dolphin-emu",
     "dolphin emulator"
    ],
-   "exe": "(^|/)Dolphin(\\.exe)?$|\\.app$",
+   "exe": "(^|/)Dolphin(\\.exe)?$|(^|/)dolphin-emu$|(^|/)Dolphin\\.app$",
    "linux": {
     "platforms": [
      "windows",
      "macos",
      "linux"
     ],
-    "notes": "An open-source emulator for GameCube and Wii games that supports high-definition rendering, network play, and modding tools. On Linux it is installed from Flathub.",
-    "flatpak": "org.DolphinEmu.dolphin-emu"
+    "notes": "An open-source emulator for GameCube and Wii games. Dolphin publishes official Linux AppImages for x64 and arm64 from the same update service the Windows build comes from - which is what Distill installs - and Flatpaks beside them. The Flathub app org.DolphinEmu.dolphin-emu is offered as the alternative. The Linux program is `dolphin-emu`, not `Dolphin`.",
+    "flatpak": "org.DolphinEmu.dolphin-emu",
+    "asset": {
+     "linux": "dolphin-.*-linux-(x64|arm64)\\.AppImage$"
+    },
+    "exe": "(^|/)dolphin-emu$|(^|/)dolphin[^/]*\\.AppImage$"
    }
   },
   {
@@ -198,8 +341,15 @@
    "systems": [
     "Wii U"
    ],
-   "exe": "(^|/)Cemu(\\.exe)?$|\\.AppImage$",
-   "notes": "An open-source Wii U video game console emulator compatible with Windows and Linux operating systems."
+   "exe": "(^|/)Cemu(\\.exe)?$|(^|/)Cemu[^/]*\\.AppImage$",
+   "notes": "An open-source Wii U emulator. The newest release is v2.6 from 2025-02-06 and it has not moved since; the repository is still active, so an update check that keeps reporting v2.6 is correct, not a failure.",
+   "linux": {
+    "asset": {
+     "linux": "Cemu-[0-9.]+-x86_64\\.AppImage$"
+    },
+    "exe": "(^|/)Cemu$|(^|/)Cemu[^/]*\\.AppImage$",
+    "notes": "An open-source Wii U emulator. On Linux it publishes Cemu-<version>-x86_64.AppImage, which is what Distill installs, and an ubuntu-22.04 x64 zip beside it. No release since 2025-02-06: an update check that keeps reporting v2.6 is correct."
+   }
   },
   {
    "id": "ryujinx",
@@ -210,8 +360,8 @@
    "repo": "projects/Ryubing",
    "host": "git.ryujinx.app",
    "website": "https://ryujinx.app/",
-   "verify": true,
-   "notes": "Ryubing, the maintained Ryujinx. Its site moved from GitLab to Forgejo. An open-source Nintendo Switch emulator focused on accuracy, performance, and a user-friendly interface.",
+   "verify": false,
+   "notes": "Ryubing, the maintained Ryujinx. Its site moved from GitLab to Forgejo, and it is the project you get today: the original Ryujinx/Ryujinx repository is gone (404). An open-source Nintendo Switch emulator focused on accuracy, performance, and a user-friendly interface.",
    "systems": [
     "Switch"
    ],
@@ -227,7 +377,14 @@
    "channel_repos": {
     "nightly": "Ryubing/Canary"
    },
-   "portable": "portable/"
+   "portable": "portable/",
+   "linux": {
+    "download_hosts": [
+     "git.ryujinx.app"
+    ],
+    "exe": "(^|/)ryujinx[^/]*\\.AppImage$|(^|/)Ryujinx(\\.exe)?$",
+    "notes": "Ryubing is the maintained Ryujinx (the original Ryujinx/Ryujinx repository no longer exists). On Linux, Distill installs the official AppImage for this PC's CPU - ryujinx-<version>-x64.AppImage or -arm64.AppImage - from git.ryujinx.app, the project's Forgejo host, and the linux_x64 / linux_arm64 .tar.gz builds are offered as alternatives. Its releases publish no checksum file, so a download is checked by size only; that is a property of the project, not a Distill setting."
+   }
   },
   {
    "id": "eden",
@@ -270,10 +427,8 @@
    "name": "Sudachi",
    "system": "Switch",
    "group": "Nintendo",
-   "repo": "emuplace/sudachi.emuplace.app",
-   "website": "https://sudachi.emuplace.app/",
-   "verify": true,
-   "notes": "An experimental Nintendo Switch emulator fork based on the Yuzu architecture.",
+   "status": "discontinued",
+   "notes": "Sudachi is discontinued. Its official repository (sudachi-emu/sudachi) no longer exists and its old site no longer answers with a valid certificate, so there is no official build to download from anywhere. Distill will not point at a fork, a mirror or a re-upload of it, and will not download anything under its name. A Sudachi you already have keeps launching.",
    "systems": [
     "Switch"
    ],
@@ -281,23 +436,30 @@
     "sudachi"
    ],
    "portable": "user/",
-   "trusted_owner": "emuplace"
+   "exe": "(^|/)sudachi[^/]*\\.AppImage$|(^|/)sudachi(\\.exe)?$"
   },
   {
    "id": "eglantine",
    "name": "Eglantine",
    "system": "Switch 2",
    "group": "Nintendo",
-   "repo": "Djihads80/Eglantine",
-   "website": "https://github.com/Djihads80/Eglantine",
-   "verify": true,
-   "notes": "An experimental emulator project combining codebases from Eden, Yuzu, and Sudachi architectures.",
+   "repo": "Eglantine-Community/Eglantine",
+   "trusted_owner": "Eglantine-Community",
+   "website": "https://github.com/Eglantine-Community/Eglantine",
+   "verify": false,
+   "status": "experimental",
+   "notes": "An experimental emulator project combining codebases from Eden, Yuzu, and Sudachi architectures. The project describes itself as a VERY experimental Nintendo Switch 2 emulator: its newest tag is a release candidate even though GitHub's prerelease flag is off, so Distill labels it experimental rather than stable.",
    "systems": [
     "Switch 2"
    ],
    "aliases": [
     "eglantine"
-   ]
+   ],
+   "linux": {
+    "trusted_owner": "Eglantine-Community",
+    "exe": "(^|/)eglantine[^/]*\\.AppImage$|(^|/)eglantine(\\.exe)?$",
+    "notes": "Eglantine is a VERY experimental Nintendo Switch 2 emulator, built on code from Eden, yuzu and Sudachi. Its releases are release candidates and daily builds, not stable versions, so expect crashes. On Linux, Distill installs the official eglantine AppImage for this PC's CPU (x86_64 or aarch64), and the PGO build or the .tar.gz are offered as alternatives. Eglantine and Lichii are separate projects that publish separate binaries: eglantine-* files are Eglantine's, lichii-* files are Lichii's."
+   }
   },
   {
    "id": "lichii",
@@ -307,9 +469,10 @@
    "repo": "zortos293/Lichii",
    "trusted_owner": "zortos293",
    "website": "https://github.com/zortos293/Lichii",
-   "verify": true,
    "logo": "https://github.com/zortos293/Lichii/raw/nx2/dist/branding/lichii_icon_with_logo.png",
-   "notes": "A very experimental Nintendo Switch 2 emulator (it also runs Switch titles), forked from Eglantine, Eden, yuzu and Sudachi. Early builds are Windows-only pre-releases, so expect crashes and rendering errors.",
+   "verify": false,
+   "status": "experimental",
+   "notes": "A very experimental Nintendo Switch 2 emulator that also runs Switch titles, forked from the Eglantine, Eden, yuzu and Sudachi codebases. It is a separate project from Eglantine, with its own repository and its own lichii-* builds. Early builds were Windows-only pre-releases; Linux AppImages are published now, and both remain experimental, so expect crashes and rendering errors.",
    "systems": [
     "Switch 2"
    ],
@@ -317,7 +480,12 @@
     "lichii",
     "eglantine-nx2"
    ],
-   "exe": "(^|/)(lichii|eglantine)(\\.exe)?$"
+   "exe": "(^|/)lichii(\\.exe)?$",
+   "linux": {
+    "trusted_owner": "zortos293",
+    "exe": "(^|/)lichii[^/]*\\.AppImage$|(^|/)lichii(\\.exe)?$",
+    "notes": "A VERY experimental Nintendo Switch 2 emulator (it also runs Switch titles), forked from the Eglantine, Eden, yuzu and Sudachi codebases. On Linux, Distill installs the official lichii AppImage for this PC's CPU (x86_64 or aarch64), and the PGO build or the .tar.gz are offered as alternatives. Lichii and Eglantine are separate projects with separate binaries: lichii-* files are Lichii's, eglantine-* files are Eglantine's, and Distill never takes one for the other."
+   }
   },
   {
    "id": "azahar",
@@ -325,8 +493,9 @@
    "system": "Nintendo 3DS",
    "group": "Nintendo",
    "repo": "azahar-emu/azahar",
+   "trusted_owner": "azahar-emu",
    "website": "https://azahar-emu.org/",
-   "verify": true,
+   "verify": false,
    "notes": "A Nintendo 3DS emulator that acts as a direct continuation and successor to Lime3DS and Citra architectures.",
    "systems": [
     "Nintendo 3DS"
@@ -334,7 +503,15 @@
    "aliases": [
     "azahar"
    ],
-   "portable": "user/"
+   "portable": "user/",
+   "linux": {
+    "trusted_owner": "azahar-emu",
+    "asset": {
+     "linux-x64": "^azahar\\.AppImage$"
+    },
+    "exe": "(^|/)azahar[^/]*\\.AppImage$|(^|/)azahar(\\.exe)?$",
+    "notes": "A Nintendo 3DS emulator that acts as a direct continuation and successor to Lime3DS and Citra architectures. On Linux, Distill installs the official azahar.AppImage and keeps it up to date from the project's releases. The project publishes that AppImage for x86_64 only, so there is no Linux build for aarch64 machines. Its release candidates and alphas are marked as pre-releases, and Distill only falls back to them when the stable line has nothing newer."
+   }
   },
   {
    "id": "melonds",
@@ -349,7 +526,16 @@
    "aliases": [
     "melonds"
    ],
-   "notes": "A fast and accurate Nintendo DS and DSi emulator supporting local Wi-Fi multiplayer and OpenGL rendering."
+   "notes": "A fast and accurate Nintendo DS and DSi emulator supporting local Wi-Fi multiplayer and OpenGL rendering.",
+   "exe": "(^|/)melonDS(\\.exe)?$|(^|/)melonDS[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "melonDS-[0-9.]+-appimage-x86_64\\.zip$"
+    },
+    "flatpak": "net.kuribo64.melonDS",
+    "exe": "(^|/)melonDS$|(^|/)melonDS[^/]*\\.AppImage$",
+    "notes": "A fast and accurate Nintendo DS and DSi emulator. On Linux the AppImage is published inside a zip (melonDS-<version>-appimage-x86_64.zip), so Distill unpacks it and installs the AppImage it holds; the Flathub app net.kuribo64.melonDS is offered as the alternative. No release since 2025-11-18."
+   }
   },
   {
    "id": "mgba",
@@ -364,7 +550,16 @@
     "Game Boy Color"
    ],
    "notes": "An emulator for running Game Boy Advance games with a focus on speed, accuracy, and low hardware requirements.",
-   "portable": "portable.ini"
+   "portable": "portable.ini",
+   "exe": "(^|/)mgba(-qt)?(\\.exe)?$|(^|/)mGBA[^/]*\\.appimage$",
+   "linux": {
+    "asset": {
+     "linux": "mGBA-[0-9.]+-appimage-(x64|arm64)\\.appimage$"
+    },
+    "flatpak": "io.mgba.mGBA",
+    "exe": "(^|/)mgba-qt$|(^|/)mGBA[^/]*\\.appimage$",
+    "notes": "A Game Boy Advance emulator. On Linux it publishes an AppImage for x64 and one for arm64 with a lower case .appimage extension, plus Ubuntu tarballs; Distill installs the AppImage and offers the Flathub app io.mgba.mGBA. The program inside is mgba-qt."
+   }
   },
   {
    "id": "rmg",
@@ -379,16 +574,23 @@
    "aliases": [
     "rmg"
    ],
-   "notes": "A graphical user interface for Mupen64Plus written in C++ using Qt, focused on a modern desktop experience."
+   "notes": "A graphical user interface for Mupen64Plus written in C++ using Qt, focused on a modern desktop experience.",
+   "exe": "(^|/)RMG(\\.exe)?$|(^|/)RMG[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "RMG-Portable-Linux64-v[0-9.]+\\.AppImage$"
+    },
+    "exe": "(^|/)RMG$|(^|/)RMG[^/]*\\.AppImage$",
+    "notes": "A user-friendly front end for the Mupen64Plus Nintendo 64 emulator. On Linux it publishes RMG-Portable-Linux64-v<version>.AppImage, which is what Distill installs. The project has no separate website; its repository is the project page."
+   }
   },
   {
    "id": "mesen2",
-   "name": "Mesen2",
+   "name": "Mesen CE",
    "system": "NES / SNES / GB / PC Engine",
    "group": "Nintendo",
-   "repo": "SourMesen/Mesen2",
+   "repo": "nesdev-org/MesenCE",
    "website": "https://www.mesen.ca/",
-   "verify": true,
    "systems": [
     "NES",
     "SNES",
@@ -396,21 +598,34 @@
     "Game Boy Color",
     "PC Engine"
    ],
-   "notes": "A multi-system emulator built for high accuracy, deep debugging features, and broad retro platform compatibility."
+   "notes": "A multi-system emulator (NES, SNES, Game Boy, PC Engine and more) focusing on accuracy and features. The project is now Mesen CE: the old SourMesen/Mesen2 repository is archived, and downloads come from nesdev-org/MesenCE, which is what Distill follows.",
+   "aliases": [
+    "mesen2",
+    "mesen",
+    "Mesen2"
+   ],
+   "linux": {
+    "asset": {
+     "linux": "Mesen_[0-9.]+_Linux_(x64|ARM64)\\.zip$"
+    },
+    "exe": "(^|/)Mesen$|(^|/)Mesen(\\.exe)?$",
+    "notes": "A multi-system emulator for NES, SNES, Game Boy, PC Engine and more. On Linux it publishes Mesen_<version>_Linux_x64.zip (and an ARM64 one) holding a single `Mesen` program - there is no AppImage and none is promised. The old SourMesen/Mesen2 repository is archived; Distill follows Mesen CE."
+   },
+   "exe": "(^|/)Mesen(\\.exe)?$"
   },
   {
    "id": "xenia-canary",
    "name": "Xenia Canary",
    "system": "Xbox 360",
    "group": "Microsoft",
-   "repo": "xenia-canary/xenia-canary-releases",
+   "repo": "xenia-canary/xenia-canary",
    "website": "https://xenia.jp/",
    "platforms": [
-    "windows"
+    "windows",
+    "linux"
    ],
    "version_from": "published_at",
-   "verify": true,
-   "notes": "An experimental build branch of the Xenia Xbox 360 emulator incorporating early fixes and features.",
+   "notes": "An experimental build channel of the Xenia Xbox 360 emulator, released every day from xenia-canary/xenia-canary. The old xenia-canary-releases repository is a frozen mirror (last release 2026-03-24) and is no longer followed.",
    "systems": [
     "Xbox 360"
    ],
@@ -425,11 +640,13 @@
      "linux"
     ],
     "asset": {
-     "linux": "linux.*\\.(tar[\\w.]*|zip)$",
-     "windows": "windows"
+     "linux": "xenia_canary_linux(\\.tar\\.xz|\\.AppImage)$",
+     "windows": "xenia_canary_windows.*\\.(7z|zip)$"
     },
-    "exe": "(^|/)xenia_canary$|(^|/)xenia_canary\\.exe$"
-   }
+    "exe": "(^|/)xenia_canary$|(^|/)xenia_canary[^/]*\\.AppImage$",
+    "notes": "An experimental Xbox 360 emulator, rebuilt almost daily. On Linux it publishes xenia_canary_linux.AppImage, which Distill installs; there is no version in the file name, so the release date is what tells builds apart."
+   },
+   "exe": "(^|/)xenia_canary(\\.exe)?$|(^|/)xenia_canary[^/]*\\.AppImage$"
   },
   {
    "id": "xemu",
@@ -441,7 +658,15 @@
    "systems": [
     "Xbox"
    ],
-   "notes": "An open-source original Xbox emulator enabling users to run commercial dashboard and game software on modern hardware."
+   "notes": "An open-source original Xbox emulator enabling users to run commercial dashboard and game software on modern hardware.",
+   "exe": "(^|/)xemu(\\.exe)?$|(^|/)xemu[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "xemu-[0-9.]+-(x86_64|aarch64)\\.AppImage$"
+    },
+    "exe": "(^|/)xemu$|(^|/)xemu[^/]*\\.AppImage$",
+    "notes": "An original Xbox emulator. On Linux it publishes xemu-<version>-x86_64.AppImage (and an aarch64 one), which is what Distill installs; a rolling 'Latest Development Build' tag exists beside the stable one."
+   }
   },
   {
    "id": "flycast",
@@ -449,24 +674,39 @@
    "system": "Dreamcast / Naomi / Atomiswave",
    "group": "Sega",
    "repo": "flyinghead/flycast",
-   "website": "https://flycast.colorgames.de/",
+   "website": "https://github.com/flyinghead/flycast",
    "systems": [
     "Dreamcast"
    ],
-   "notes": "A multi-platform Sega Dreamcast, Naomi, and Atomiswave emulator derived from Reicast."
+   "notes": "A Dreamcast, Naomi and Atomiswave emulator. The address this entry used to point at (flycast.colorgames.de) no longer resolves; the project has no website of its own, so the repository is the link.",
+   "exe": "(^|/)flycast(\\.exe)?$|(^|/)flycast[^/]*\\.AppImage$",
+   "linux": {
+    "asset": {
+     "linux": "flycast-x86_64-[0-9.]+\\.AppImage$"
+    },
+    "flatpak": "org.flycast.Flycast",
+    "exe": "(^|/)flycast$|(^|/)flycast[^/]*\\.AppImage$",
+    "notes": "A Dreamcast, Naomi and Atomiswave emulator. On Linux it publishes flycast-x86_64-<version>.AppImage, which is what Distill installs, and the Flathub app org.flycast.Flycast is offered as the alternative alongside the Android, Switch and macOS builds. The address this entry used to point at (flycast.colorgames.de) no longer resolves, and the project has no website of its own, so the repository is the link."
+   }
   },
   {
    "id": "ymir",
    "name": "Ymir",
    "system": "Sega Saturn",
    "group": "Sega",
-   "repo": "StrikerX3/ymir",
-   "website": "https://github.com/StrikerX3/ymir",
-   "verify": true,
+   "repo": "ymir-emu/Ymir",
+   "website": "https://github.com/ymir-emu/Ymir",
    "systems": [
     "Sega Saturn"
    ],
-   "notes": "An emulator designed to target and run Sega Saturn software titles."
+   "notes": "An experimental Sega Saturn emulator. The repository moved to ymir-emu/Ymir; there is no separate website, so the repository is the link.",
+   "linux": {
+    "asset": {
+     "linux": "ymir-linux-.*\\.tar\\.xz$"
+    },
+    "exe": "(^|/)ymir-sdl3$|(^|/)ymir$",
+    "notes": "An experimental Sega Saturn emulator. On Linux it publishes three tarballs tuned for one CPU each - x86_64 AVX2, x86_64 SSE2 and AArch64 NEON - and no AppImage; Distill installs the one for this PC's CPU. The program inside is `ymir-sdl3`. There is no dedicated website; the repository is the link."
+   }
   },
   {
    "id": "bigpemu",
@@ -475,7 +715,7 @@
    "group": "Atari",
    "website": "https://www.richwhitehouse.com/jaguar/",
    "verify": true,
-   "notes": "A high-performance emulator and development tool for the Atari Jaguar and Atari Jaguar CD systems.",
+   "notes": "An Atari Jaguar and Jaguar CD emulator, closed source and published on the author's own page (richwhitehouse.com/jaguar). The page carries no release date, so the version comes from the file name.",
    "systems": [
     "Atari Jaguar",
     "Atari Jaguar CD"
@@ -489,7 +729,15 @@
    "platforms": [
     "windows",
     "linux"
-   ]
+   ],
+   "exe": "(^|/)BigPEmu(\\.exe)?$",
+   "linux": {
+    "asset": {
+     "linux": "BigPEmu-linux-(x64|arm64)-.*\\.tar\\.gz$"
+    },
+    "exe": "(^|/)bigpemu$",
+    "notes": "An Atari Jaguar and Jaguar CD emulator, closed source and published only on the author's own page. On Linux it ships BigPEmu_Linux64_v<version>.tar.gz (and an ARM64 one) - no AppImage - which Distill installs. The download page publishes no release date, so the version is read from the file name."
+   }
   },
   {
    "id": "mame",
@@ -502,17 +750,22 @@
     "windows"
    ],
    "asset": {
-    "windows": "64bit\\.exe$"
+    "windows": "(x64|arm64)\\.exe$"
    },
    "notes": "An extensive multi-purpose hardware preservation project designed to reproduce arcade machines and vintage computers.",
    "systems": [],
-   "exe": "(^|/)mame[\\w.]*\\.exe$",
+   "exe": "(^|/)mame[\\w.]*\\.exe$|(^|/)mame$",
    "linux": {
     "platforms": [
      "windows",
      "linux"
     ],
-    "flatpak": "org.mamedev.MAME"
+    "flatpak": "org.mamedev.MAME",
+    "asset": {
+     "windows": "(x64|arm64)\\.exe$"
+    },
+    "exe": "(^|/)mame$",
+    "notes": "A multi-purpose hardware preservation project reproducing arcade machines and vintage computers. MAME publishes no Linux binary: the file whose name looks like one, mame0289lx.zip, is the full driver information in XML, not a program (listing it shows a single mame0289.xml). On Linux Distill installs the Flathub app org.mamedev.MAME; the program it provides is `mame`, which also runs a machine from the command line."
    }
   },
   {
@@ -540,7 +793,7 @@
    ],
    "notes": "An open-source multi-system emulator focused on cycle accuracy and source code clarity.",
    "linux": {
-    "notes": "An open-source multi-system emulator focused on cycle accuracy and source code clarity. On Linux it is built from source (a script in a terminal does the work).",
+    "notes": "An open-source multi-system emulator focused on cycle accuracy and source code clarity. The project publishes no Linux binary, so Distill builds it from source (a script in a terminal does the work); the Flathub app dev.ares.ares is offered as the alternative.",
     "build": "ares",
     "platforms": [
      "windows",
@@ -550,7 +803,8 @@
     "asset": {
      "windows": "windows.*\\.zip$"
     },
-    "exe": "(^|/)ares(\\.exe)?$"
+    "exe": "(^|/)ares(\\.exe)?$",
+    "flatpak": "dev.ares.ares"
    }
   },
   {
@@ -559,14 +813,22 @@
    "system": "SNES",
    "group": "Nintendo",
    "repo": "snes9xgit/snes9x",
-   "website": "https://github.com/snes9xgit/snes9x",
+   "website": "http://www.snes9x.com/",
    "notes": "A portable Super Nintendo Entertainment System (TM) emulator.",
    "systems": [
     "SNES"
    ],
    "aliases": [
     "snes9x"
-   ]
+   ],
+   "exe": "(^|/)snes9x[\\w.-]*\\.exe$|(^|/)snes9x-gtk$",
+   "linux": {
+    "asset": {
+     "linux": "Snes9x-[0-9.]+-x86_64\\.AppImage$"
+    },
+    "exe": "(^|/)snes9x-gtk$|(^|/)Snes9x[^/]*\\.AppImage$",
+    "notes": "A portable Super Nintendo emulator. On Linux it publishes Snes9x-<version>-x86_64.AppImage, which is what Distill installs; the program inside is snes9x-gtk. Version 1.63 has been current since 2024-07-09 even though the repository still receives commits."
+   }
   },
   {
    "id": "project64",
@@ -586,7 +848,7 @@
     "windows"
    ],
    "linux": {
-    "notes": "A free and open-source emulator for the Nintendo 64 and Nintendo 64 Disk Drive. On Linux the portable build runs through Wine.",
+    "notes": "A free and open-source Nintendo 64 emulator. The newest public build is 3.0.1 (2021) and the project publishes no Linux binary: on Linux the portable Windows build runs through Wine, which Distill sets up. An update check that keeps reporting 3.0.1 is correct.",
     "platforms": [
      "windows",
      "linux"
@@ -609,15 +871,17 @@
    "name": "Lime3DS",
    "system": "Nintendo 3DS",
    "group": "Nintendo",
-   "repo": "Lime3DS/Lime3DS",
    "website": "https://lime3ds.github.io/",
-   "notes": "A Nintendo 3DS emulator based on Citra.",
+   "status": "superseded",
+   "replaced_by": "azahar",
+   "notes": "Lime3DS is superseded: its repository (Lime3DS/Lime3DS) now redirects to Azahar, no Lime3DS build is published anywhere official, and Azahar is the maintained 3DS emulator that took over from Citra and Lime3DS. Distill will never download Azahar (or anything else) under the Lime3DS name. A Lime3DS you already have keeps launching; install Azahar for new 3DS setups.",
    "systems": [
     "Nintendo 3DS"
    ],
    "aliases": [
     "lime3ds"
-   ]
+   ],
+   "exe": "(^|/)lime3ds[^/]*\\.AppImage$|(^|/)lime3ds(\\.exe)?$"
   },
   {
    "id": "fbneo",
@@ -637,7 +901,19 @@
    "aliases": [
     "fbneo",
     "finalburn neo"
-   ]
+   ],
+   "version_from": "published_at",
+   "channels": [
+    "nightly"
+   ],
+   "exe": "(^|/)fbneo[\\w.-]*\\.exe$|(^|/)fbneo$",
+   "linux": {
+    "asset": {
+     "linux": "linux-sdl2-x86_64\\.zip$"
+    },
+    "exe": "(^|/)fbneo$",
+    "notes": "A multi-system arcade emulator (Neo Geo, CPS-1/2/3 and more). Everything is published as one rolling release whose tag is literally `latest`, so the release date is what names a build; nightly is the only channel the project ships. On Linux it publishes linux-sdl2-x86_64.zip, which Distill installs."
+   }
   },
   {
    "id": "dosbox-staging",
@@ -645,15 +921,22 @@
    "system": "DOS",
    "group": "PC",
    "repo": "dosbox-staging/dosbox-staging",
-   "website": "https://dosbox-staging.github.io/",
+   "website": "https://www.dosbox-staging.org/",
    "notes": "A modern continuation of DOSBox with advanced features and current development practices.",
    "systems": [
     "DOS"
    ],
    "aliases": [
-    "dosbox",
     "dosbox-staging"
-   ]
+   ],
+   "exe": "(^|/)dosbox(\\.exe)?$",
+   "linux": {
+    "asset": {
+     "linux": "dosbox-staging-linux-x86_64-v[0-9.]+\\.tar\\.xz$"
+    },
+    "exe": "(^|/)dosbox$",
+    "notes": "A modern continuation of DOSBox. On Linux the project publishes dosbox-staging-linux-x86_64-<version>.tar.xz and nothing else - no AppImage, and no Flatpak (both plausible Flathub ids answer 404) - so Distill installs the tarball. Plain DOSBox is a different program and is not detected as this one."
+   }
   },
   {
    "id": "scummvm",
@@ -682,8 +965,10 @@
      "macos",
      "linux"
     ],
-    "flatpak": "org.scummvm.ScummVM"
-   }
+    "flatpak": "org.scummvm.ScummVM",
+    "exe": "(^|/)scummvm$"
+   },
+   "exe": "(^|/)scummvm(\\.exe)?$"
   },
   {
    "id": "blastem",
@@ -701,7 +986,26 @@
    ],
    "source": "custom",
    "adapter": "blastem_site",
-   "endpoint": "https://www.retrodev.com/blastem/downloads.html"
+   "endpoint": "https://www.retrodev.com/blastem/downloads.html",
+   "platforms": [
+    "windows",
+    "linux",
+    "macos"
+   ],
+   "exe": "(^|/)blastem(\\.exe)?$",
+   "linux": {
+    "platforms": [
+     "windows",
+     "linux",
+     "macos"
+    ],
+    "asset": {
+     "linux": "blastem-linux-x64-.*\\.tar\\.gz$"
+    },
+    "flatpak": "com.retrodev.blastem",
+    "exe": "(^|/)blastem$",
+    "notes": "A Sega Mega Drive and Genesis emulator with a Mercurial repository and no release feed; the stable files are listed on its downloads page. On Linux it publishes blastem64-<version>.tar.gz and the Flathub app com.retrodev.blastem exists; Distill installs the tarball and offers the Flathub app as the alternative."
+   }
   },
   {
    "id": "bluestacks",
@@ -709,7 +1013,7 @@
    "system": "Android",
    "group": "Mobile",
    "website": "https://www.bluestacks.com/",
-   "notes": "A popular Android emulator for running mobile games and apps on desktop. Windows only, and it comes only as an installer: Distill downloads it, checks it against its published SHA-256, and you run it to install.",
+   "notes": "A Windows-only Android emulator, closed source. It publishes only an x64 installer (no arm64) and there is no portable mode, so nothing can be run on Linux; the version and installer address come from Microsoft's winget manifests.",
    "systems": [
     "Android"
    ],
