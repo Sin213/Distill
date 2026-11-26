@@ -1,4 +1,4 @@
-"""Checks GitHub for a newer Distill release and installs it (Windows builds). Qt-free; the prompt lives in ui/update_prompt.py."""
+"""Checks GitHub for a newer Distill release and installs it (Windows builds; Linux only opens the release page). Qt-free; the prompt lives in ui/update_prompt.py."""
 from __future__ import annotations
 
 import hashlib
@@ -17,7 +17,12 @@ from . import update_splash
 from .constants import APP_DIR, APP_NAME, APP_VERSION
 from .github_auth import github_headers
 
-REPO = "QyuBurt/Distill"
+def _repo_for(platform: str) -> str:
+    """Linux builds are released from the Linux distribution fork; every other platform follows the upstream project."""
+    return "Sin213/Distill" if platform.startswith("linux") else "QyuBurt/Distill"
+
+
+REPO = _repo_for(sys.platform)
 API_URL = f"https://api.github.com/repos/{REPO}/releases/latest"
 CHECK_ENABLED = os.environ.get("DISTILL_NO_UPDATE_CHECK") != "1"  # tests and CI switch this off
 PREVIEW = os.environ.get("DISTILL_UPDATE_PREVIEW") == "1"  # show the update screen with a made-up download (no release needed)

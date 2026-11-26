@@ -56,6 +56,26 @@ class CheckTests(unittest.TestCase):
             self.assertEqual(updater.check("v1.0").asset_url, "")
 
 
+class LinuxTargetTests(unittest.TestCase):
+    def test_linux_follows_the_linux_distribution_and_windows_keeps_upstream(self):
+        self.assertEqual(updater._repo_for("linux"), "Sin213/Distill")
+        self.assertEqual(updater._repo_for("win32"), "QyuBurt/Distill")
+        self.assertEqual(updater._repo_for("darwin"), "QyuBurt/Distill")
+        self.assertEqual(updater.API_URL, f"https://api.github.com/repos/{updater.REPO}/releases/latest")
+
+    def test_linux_update_is_manual_and_never_downloads_a_binary(self):
+        release = {"tag_name": "v9.0", "html_url": "https://github.com/Sin213/Distill/releases/tag/v9.0", "body": "n",
+                   "assets": [{"name": "Distill-x86_64.AppImage", "browser_download_url": "https://x/a", "size": 5},
+                              {"name": "Distill-portable.zip", "browser_download_url": "https://x/z.zip", "size": 5},
+                              {"name": "Distill.exe", "browser_download_url": "https://x/e.exe", "size": 5}]}
+        with mock.patch.object(updater, "_get", return_value=json.dumps(release).encode()), \
+             mock.patch.object(updater.sys, "platform", "linux"), \
+             mock.patch.object(updater.sys, "frozen", True, create=True):  # a packaged Linux build, the real install_kind()
+            self.assertEqual(updater.install_kind(), "source")
+            up = updater.check("v1.0")
+        self.assertEqual((up.asset_url, up.page), ("", release["html_url"]))
+
+
 class ScriptTests(unittest.TestCase):
     def test_helper_script_waits_swaps_and_restarts(self):
         from pathlib import Path

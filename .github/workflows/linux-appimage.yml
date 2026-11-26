@@ -38,6 +38,28 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: python tests/ci_unittest.py --timeout 600 -- python -m unittest discover -s tests -t .
 
+      # After the tests, which expect the checked-in two-part version; the build and both packages carry the tag.
+      - name: Stamp the version from the release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, re
+          tag = os.environ["GITHUB_REF_NAME"]
+          if not re.fullmatch(r"v\d+(\.\d+)*", tag, re.ASCII):
+              raise SystemExit(f"Tag {tag} must look like v1.2 or v1.2.3")
+          for path, pattern, new in (
+              ("distill/constants.py", r'APP_VERSION = "[^"]*"', f'APP_VERSION = "{tag}"'),
+              ("pyproject.toml", r'(?m)^version = "[^"]*"', f'version = "{tag[1:]}"'),
+          ):
+              text = open(path, encoding="utf-8", newline="").read()
+              text, n = re.subn(pattern, new, text, count=1)
+              if n != 1:
+                  raise SystemExit(f"Could not stamp {path}")
+              open(path, "w", encoding="utf-8", newline="").write(text)
+          print("Version set to", tag)
+          PY
+
       - name: Build the bundle
         run: pyinstaller --noconfirm distill-linux.spec
 
@@ -71,6 +93,11 @@ jobs:
           export APPIMAGE_EXTRACT_AND_RUN=1
           QT_QPA_PLATFORM=offscreen ./Distill-x86_64.AppImage --self-test /tmp/report.txt
           cat /tmp/report.txt
+          # A tagged build must report the tag as its version, or the DEB and AppImage would disagree with the release.
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]] && ! grep -qF "Distill $GITHUB_REF_NAME:" /tmp/report.txt; then
+              echo "The built program does not report version $GITHUB_REF_NAME." >&2
+              exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
