@@ -1,7 +1,7 @@
 Package: distill
 Version: @VERSION@
 Architecture: amd64
-Maintainer: Sin213
+Maintainer: Sin213 <79215527+Sin213@users.noreply.github.com>
 Section: utils
 Priority: optional
 Depends: libc6 (>= @LIBC6_MIN@), ca-certificates, libegl1, libopengl0, libxkbcommon0, libdbus-1-3,

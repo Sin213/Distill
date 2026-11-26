@@ -106,6 +106,7 @@ printf 'fixture package\\n' > "${@: -1}"
 
         stage, control = build("2.39")
         self.assertEqual((control["Package"], control["Version"], control["Architecture"]), ("distill", "2.3.4", "amd64"))
+        self.assertEqual(control["Maintainer"], "Sin213 <79215527+Sin213@users.noreply.github.com>")
         self.assertEqual(control["Recommends"], "curl, git")
         desktop = configparser.ConfigParser()
         desktop.read(stage / "usr/share/applications/distill.desktop", encoding="utf-8")
