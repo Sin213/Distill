@@ -31,7 +31,7 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from tests import helpers  # noqa: F401  (puts the project on sys.path)
+from tests import helpers
 from distill import emulators as em
 from distill import recomps as rc
 
@@ -219,9 +219,10 @@ class KytyPS5Tests(Linux):
         e = self.catalog()["kytyps5"]
         payload = tar_bytes({"kyty_emulator": b"\x7fELF" + b"\0" * 8, "lib/libQt6Core.so.6": b"\x7fELF",
                              "kyty_launcher": b"\x7fELF" + b"\0" * 8}, executable=())  # no mode bits: Distill sets them
-        inst = self.install(e, payload, "KytyPS5-2026-11-17-faec1f4-Linux-x86_64.tar.gz")
+        with mock.patch.object(rc, "sys", mock.Mock(platform="linux")), helpers.record_chmod() as chmod:
+            inst = self.install(e, payload, "KytyPS5-2026-11-17-faec1f4-Linux-x86_64.tar.gz")
         self.assertEqual(inst.exe, "kyty_launcher")
-        self.assertTrue(inst.exe_path().stat().st_mode & 0o111)
+        helpers.assert_executable(self, inst.exe_path(), chmod)
 
     def test_its_page_says_playstation_5_and_how_the_releases_are_named(self):
         e = self.catalog()["kytyps5"]
@@ -250,9 +251,10 @@ class ShadPS4Tests(Linux):
 
     def test_the_zip_holds_the_appimage_and_that_is_what_gets_registered(self):
         payload = zip_bytes({"Shadps4-sdl.AppImage": b"\x7fELF" + b"\0" * 8})
-        inst = self.install(self.e, payload, "shadps4-linux-sdl-0.21.0.zip")
+        with mock.patch.object(rc, "sys", mock.Mock(platform="linux")), helpers.record_chmod() as chmod:
+            inst = self.install(self.e, payload, "shadps4-linux-sdl-0.21.0.zip")
         self.assertEqual(inst.exe, "Shadps4-sdl.AppImage")
-        self.assertTrue(inst.exe_path().stat().st_mode & 0o111)
+        helpers.assert_executable(self, inst.exe_path(), chmod)
 
     def test_the_qt_launcher_is_an_optional_extra_of_the_emulator_not_a_second_entry(self):
         self.assertEqual([x.id for x in em.companions(self.e)], ["shadps4-qtlauncher"])

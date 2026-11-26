@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from tests import helpers  # noqa: F401  (puts the project on sys.path)
+from tests import helpers
 from distill import emulators as em
 from distill import recomps as rc
 
@@ -595,10 +595,10 @@ class LinuxInstallKinds(Isolated):
         base = rc.Installed("project64", "v3.0", str(live), "Project64.exe", 1.0)
         self.store.set_installed(base)
         inst = em.EmulatorInstaller(self.store, lambda *a: None, __import__("threading").Event())
-        with mock.patch.object(em.shutil, "which", return_value="/usr/bin/wine"):
+        with mock.patch.object(em.shutil, "which", return_value="/usr/bin/wine"), helpers.record_chmod() as chmod:
             wrapped = inst._wrap_in_wine(e, base)
         launcher = Path(wrapped.folder) / wrapped.exe
-        self.assertTrue(launcher.is_file() and launcher.stat().st_mode & 0o111)
+        helpers.assert_executable(self, launcher, chmod)
         self.assertIn("wine", launcher.read_text())
         self.assertEqual(self.store.installed("project64").exe, launcher.name)
 

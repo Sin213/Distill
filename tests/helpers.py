@@ -12,10 +12,26 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+
+def record_chmod():
+    """Record the requested modes while still applying them to the fixture files."""
+    return mock.patch.object(Path, "chmod", autospec=True, side_effect=Path.chmod)
+
+
+def assert_executable(test, path, chmod):
+    test.assertTrue(path.is_file(), path)
+    if os.name == "nt":
+        # Windows chmod does not set POSIX execute bits.
+        test.assertTrue(any(call.args[0] == path and call.args[1] & stat.S_IXUSR
+                            for call in chmod.call_args_list), chmod.call_args_list)
+    else:
+        test.assertTrue(path.stat().st_mode & stat.S_IXUSR, path)
 
 
 class WindowTestCase(unittest.TestCase):

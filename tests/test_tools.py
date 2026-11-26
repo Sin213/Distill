@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import re
 import unittest
 import zipfile
@@ -9,7 +10,7 @@ from unittest import mock
 
 import distill.tools as tools
 from distill.tools import PkgExtractorManager, mame_version
-from tests.helpers import TempDirTest
+from tests.helpers import TempDirTest, assert_executable, record_chmod
 
 EXE = b"MZ" + b"\0" * 70_000
 
@@ -209,7 +210,7 @@ class NativeReleaseTests(TempDirTest):
             tar.addfile(entry, io.BytesIO(b"bad"))
         with mock.patch.object(tools.ToolManager, "_pick_root", return_value=self.tmp):
             mgr = tools.ToolManager(lambda _: None)
-        with self.assertRaises((tarfile.FilterError, RuntimeError)):
+        with self.assertRaises(getattr(tarfile, "OutsideDestinationError", RuntimeError)):
             mgr._extract_tar(archive, self.tmp / "dest")
         self.assertFalse((self.tmp / "escaped").exists())
 
@@ -301,7 +302,8 @@ class NativeReleaseTests(TempDirTest):
         run.assert_not_called()
 
     def test_older_linux_tool_folders_are_used_in_place_without_migration(self):
-        data = self.tmp / "data" / "distill"
+        # Model distinct XDG and legacy folders on Windows' case-insensitive filesystem.
+        data = self.tmp / "data" / ("xdg-distill" if os.name == "nt" else "distill")
         app = self.tmp / "app"
         for base in (app, data.parent / tools.APP_NAME):
             with self.subTest(base=base), \
@@ -370,10 +372,10 @@ class DownloadToolTests(TempDirTest):
         stage = self.tmp / "stage"
         stage.mkdir()
         with mock.patch.object(tools, "WINDOWS", False), \
-                mock.patch.object(mgr, "FILES", ("ffmpeg", "ffprobe")):
+                mock.patch.object(mgr, "FILES", ("ffmpeg", "ffprobe")), record_chmod() as chmod:
             mgr._unpack(archive, self.tmp, stage)
         self.assertEqual(sorted(p.name for p in stage.iterdir()), ["ffmpeg", "ffprobe"])
-        self.assertTrue((stage / "ffmpeg").stat().st_mode & 0o111)  # made runnable by the unpacker
+        assert_executable(self, stage / "ffmpeg", chmod)
 
     def test_ffmpeg_version_is_the_build_date(self):
         mgr, _ = self.manager(tools.FfmpegManager)

@@ -533,7 +533,7 @@ assert before_runtime == snapshot(base), 'runtime directories changed during imp
 
     def test_frozen_and_fresh_process_legacy(self):
         with tempfile.TemporaryDirectory() as temp:
-            base = Path(temp)
+            base = Path(temp).resolve()  # the frozen app directory resolves Windows short names
             for platform, portable, frozen in (("linux", "", True), ("linux", "1", True), ("win32", "", False), ("darwin", "", False)):
                 with self.subTest(mocked_platform=platform, portable=portable, frozen=frozen):
                     env = child_env(base)

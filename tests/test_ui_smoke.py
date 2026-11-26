@@ -1,6 +1,7 @@
 """Builds the real window off-screen. Skipped when PySide6 isn't installed (CI installs it)."""
 from __future__ import annotations
 
+from contextlib import ExitStack
 import os
 import sys
 import threading
@@ -37,14 +38,25 @@ class WindowSmokeTests(WindowTestCase, IsolatedSoundtrackFiles):
 
         with mock.patch.object(tools.ToolManager, "run", lambda self: None, create=True), \
                 mock.patch("threading.Thread.start", lambda self: None):  # no network, no background workers
-            return DistillWindow()
+            win = DistillWindow()
+        self._media_stores.callback(win.media_store.close)
+        return win
 
     def setUp(self):
+        self._media_stores = ExitStack()
         # Slots invoked after construction can also start cover/network workers.
         workers = mock.patch("threading.Thread.start", lambda self: None)
         workers.start()
         self.addCleanup(workers.stop)
         super().setUp()
+
+    def cleanup_widgets(self):
+        try:
+            super().cleanup_widgets()
+        finally:
+            # Qt timers can still query SQLite during teardown. Close the stores
+            # after Qt drains and before IsolatedSoundtrackFiles removes media.db.
+            self._media_stores.close()
 
     def real_workers(self):
         """Inside this block threads really start: for a window whose own work (kept offline by the test) has to run to its end."""
@@ -2569,6 +2581,9 @@ class WindowSmokeTests(WindowTestCase, IsolatedSoundtrackFiles):
         from types import SimpleNamespace
         from unittest import mock
 
+        from PySide6.QtCore import QBuffer, QIODevice
+        from PySide6.QtGui import QImage
+
         from distill import gamemedia as mm
         from distill import games as gm
         from distill.ui.games_dialog import EditGameDialog
@@ -2584,7 +2599,12 @@ class WindowSmokeTests(WindowTestCase, IsolatedSoundtrackFiles):
         win._gm_store.sync([rom], str(root))
         game = win._gm_store.games()[0]
         duck = gm.Standalone("duckstation", "DuckStation", Path("/emu/duck.exe"))
-        png = b"\x89PNG\r\n\x1a\n" + bytes(64)
+        image = QImage(1, 1, QImage.Format.Format_RGB32)
+        image.fill(0)
+        buffer = QBuffer()
+        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+        self.assertTrue(image.save(buffer, "PNG"))
+        png = bytes(buffer.data())
         with mock.patch.object(mm, "MEDIA_DIR", root / "media"):
             plain = EditGameDialog(win, game, ["SNES"], "", None)  # without them the window is as it was: one page, no tab strip
             self.addCleanup(plain.close)

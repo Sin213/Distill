@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import posixpath
 import subprocess
 import sys
 import unittest
@@ -21,10 +22,12 @@ from tests import SANDBOX
 
 
 class FrozenLinuxTestCase(unittest.TestCase):
+    bundle = "/tmp/distill-fake-bundle"
+
     def setUp(self):
-        for patch in (mock.patch.object(sys, "frozen", True, create=True),
-                      mock.patch.object(sys, "platform", "linux"),
-                      mock.patch.object(sys, "_MEIPASS", "/tmp/distill-fake-bundle", create=True)):
+        # Model Linux paths and platform inside hostenv while real children use the host OS.
+        for patch in (mock.patch.object(hostenv, "sys", mock.Mock(platform="linux", frozen=True, _MEIPASS=self.bundle)),
+                      mock.patch.object(hostenv, "os", mock.Mock(wraps=os, path=posixpath, environ=os.environ))):
             patch.start()
             self.addCleanup(patch.stop)
 
@@ -33,51 +36,51 @@ class HostEnvTests(FrozenLinuxTestCase):
     def test_restores_original_and_preserves_unrelated_variables(self):
         for original in ("/host/lib:/other/lib", ""):
             with self.subTest(original=original):
-                env = {"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": original, "KEEP": "yes"}
+                env = {"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": original, "KEEP": "yes"}
                 before = env.copy()
                 self.assertEqual(hostenv.host_env(env), {"LD_LIBRARY_PATH": original, "KEEP": "yes"})
                 self.assertEqual(env, before)
 
     def test_removes_bundle_path_without_original(self):
-        self.assertEqual(hostenv.host_env({"LD_LIBRARY_PATH": sys._MEIPASS, "KEEP": "yes"}), {"KEEP": "yes"})
+        self.assertEqual(hostenv.host_env({"LD_LIBRARY_PATH": self.bundle, "KEEP": "yes"}), {"KEEP": "yes"})
 
     def test_strips_only_the_first_path_entry(self):
-        env = {"LD_LIBRARY_PATH": sys._MEIPASS + ":/host/lib:/other/lib"}
+        env = {"LD_LIBRARY_PATH": self.bundle + ":/host/lib:/other/lib"}
         for pathsep in (":", ";"):
-            with self.subTest(host_pathsep=pathsep), mock.patch.object(os, "pathsep", pathsep):
+            with self.subTest(host_pathsep=pathsep), mock.patch.object(hostenv.os, "pathsep", pathsep):
                 self.assertEqual(hostenv.host_env(env), {"LD_LIBRARY_PATH": "/host/lib:/other/lib"})
 
     def test_cleaned_environment_is_unchanged_on_repeated_calls(self):
-        for env in ({"LD_LIBRARY_PATH": sys._MEIPASS},
-                    {"LD_LIBRARY_PATH": sys._MEIPASS + ":/host/lib:/other/lib"},
-                    {"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": "/host/lib"},
-                    {"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": ""}):
+        for env in ({"LD_LIBRARY_PATH": self.bundle},
+                    {"LD_LIBRARY_PATH": self.bundle + ":/host/lib:/other/lib"},
+                    {"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": "/host/lib"},
+                    {"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": ""}):
             with self.subTest(env=env):
                 cleaned = hostenv.host_env(env)
                 self.assertEqual(hostenv.host_env(cleaned), cleaned)
 
     def test_leaves_unrelated_library_paths_unchanged(self):
-        for path in ("/host/lib", sys._MEIPASS + "-other", "/host/lib:" + sys._MEIPASS):
+        for path in ("/host/lib", self.bundle + "-other", "/host/lib:" + self.bundle):
             with self.subTest(path=path):
                 env = {"LD_LIBRARY_PATH": path}
                 self.assertEqual(hostenv.host_env(env), env)
         self.assertEqual(hostenv.host_env({}), {})
 
     def test_defaults_to_a_copy_of_the_process_environment(self):
-        with mock.patch.dict(os.environ, {"LD_LIBRARY_PATH": sys._MEIPASS, "KEEP": "yes"}, clear=True):
+        with mock.patch.dict(os.environ, {"LD_LIBRARY_PATH": self.bundle, "KEEP": "yes"}, clear=True):
             self.assertEqual(hostenv.host_env(), {"KEEP": "yes"})
-            self.assertEqual(os.environ["LD_LIBRARY_PATH"], sys._MEIPASS)
+            self.assertEqual(os.environ["LD_LIBRARY_PATH"], self.bundle)
 
     def test_qt_paths_remove_only_bundle_entries_anywhere_in_the_list(self):
         for name in ("QT_PLUGIN_PATH", "QML2_IMPORT_PATH"):
             for value, expected in (
-                    (sys._MEIPASS + "/PySide6/Qt/plugins", {}),
-                    (sys._MEIPASS, {}),
-                    ("/host/qt:" + sys._MEIPASS + "/PySide6/Qt:" + sys._MEIPASS + ":/other/qt",
+                    (self.bundle + "/PySide6/Qt/plugins", {}),
+                    (self.bundle, {}),
+                    ("/host/qt:" + self.bundle + "/PySide6/Qt:" + self.bundle + ":/other/qt",
                      {name: "/host/qt:/other/qt"}),
-                    (sys._MEIPASS + "-other:" + sys._MEIPASS + "/../host/qt",
-                     {name: sys._MEIPASS + "-other:" + sys._MEIPASS + "/../host/qt"}),
-                    (":" + sys._MEIPASS + "/PySide6/Qt:", {name: ":"}),
+                    (self.bundle + "-other:" + self.bundle + "/../host/qt",
+                     {name: self.bundle + "-other:" + self.bundle + "/../host/qt"}),
+                    (":" + self.bundle + "/PySide6/Qt:", {name: ":"}),
                     ("", {name: ""})):
                 with self.subTest(name=name, value=value):
                     env = {name: value, "KEEP": "yes"}
@@ -89,18 +92,18 @@ class HostEnvTests(FrozenLinuxTestCase):
         for name in ("QT_PLUGIN_PATH", "QML2_IMPORT_PATH"):
             for original in ("/host/qt:/other/qt", ""):
                 with self.subTest(name=name, original=original):
-                    env = {name: sys._MEIPASS + "/PySide6/Qt", name + "_ORIG": original}
+                    env = {name: self.bundle + "/PySide6/Qt", name + "_ORIG": original}
                     self.assertEqual(hostenv.host_env(env), {name: original})
                     env[name] = "/host/qt"
                     self.assertEqual(hostenv.host_env(env), env)
 
     def test_noop_outside_frozen_linux(self):
-        env = {"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": "/host/lib",
-               "QT_PLUGIN_PATH": sys._MEIPASS + "/plugins", "QT_PLUGIN_PATH_ORIG": "/host/plugins",
-               "QML2_IMPORT_PATH": sys._MEIPASS + "/qml", "QML2_IMPORT_PATH_ORIG": "/host/qml"}
+        env = {"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": "/host/lib",
+               "QT_PLUGIN_PATH": self.bundle + "/plugins", "QT_PLUGIN_PATH_ORIG": "/host/plugins",
+               "QML2_IMPORT_PATH": self.bundle + "/qml", "QML2_IMPORT_PATH_ORIG": "/host/qml"}
         for frozen, platform in ((False, "linux"), (True, "win32"), (True, "darwin")):
             with self.subTest(frozen=frozen, platform=platform), \
-                    mock.patch.object(sys, "frozen", frozen), mock.patch.object(sys, "platform", platform):
+                    mock.patch.object(hostenv.sys, "frozen", frozen), mock.patch.object(hostenv.sys, "platform", platform):
                 result = hostenv.host_env(env)
                 self.assertEqual(result, env)
                 self.assertIsNot(result, env)
@@ -114,7 +117,7 @@ class InstallTests(FrozenLinuxTestCase):
         for patch in (mock.patch.object(subprocess.Popen, "__init__", subprocess.Popen.__init__),
                       mock.patch.object(QDesktopServices, "openUrl", QDesktopServices.openUrl),
                       mock.patch.object(hostenv, "_installed", False),
-                      mock.patch.dict(os.environ, {"LD_LIBRARY_PATH": sys._MEIPASS})):
+                      mock.patch.dict(os.environ, {"LD_LIBRARY_PATH": self.bundle})):
             patch.start()
             self.addCleanup(patch.stop)
         # Preserve host requirements such as Windows' SystemRoot for real Python children.
@@ -128,11 +131,11 @@ class InstallTests(FrozenLinuxTestCase):
     def test_inherited_environment_is_clean_and_parent_is_unchanged(self):
         hostenv.install()
         self.assertEqual(self.child_library_path(), "None")
-        self.assertEqual(os.environ["LD_LIBRARY_PATH"], sys._MEIPASS)
+        self.assertEqual(os.environ["LD_LIBRARY_PATH"], self.bundle)
 
     def test_explicit_environment_restores_original_without_mutating_input(self):
         hostenv.install()
-        env = dict(os.environ, LD_LIBRARY_PATH=sys._MEIPASS, LD_LIBRARY_PATH_ORIG="/host/lib")
+        env = dict(os.environ, LD_LIBRARY_PATH=self.bundle, LD_LIBRARY_PATH_ORIG="/host/lib")
         before = env.copy()
         self.assertEqual(self.child_library_path(env=env), "/host/lib")
         self.assertEqual(env, before)
@@ -141,7 +144,7 @@ class InstallTests(FrozenLinuxTestCase):
     def test_positional_environment_is_cleaned(self):
         hostenv.install()
         command = [sys.executable, "-I", "-c", 'import os;print(os.environ.get("LD_LIBRARY_PATH"))']
-        env = dict(os.environ, LD_LIBRARY_PATH=sys._MEIPASS + ":/host/lib")
+        env = dict(os.environ, LD_LIBRARY_PATH=self.bundle + ":/host/lib")
         with subprocess.Popen(command, -1, None, None, subprocess.PIPE, None, None, True, False, None, env,
                               text=True) as process:
             stdout, _ = process.communicate(timeout=10)
@@ -149,8 +152,8 @@ class InstallTests(FrozenLinuxTestCase):
         self.assertEqual(stdout.strip(), "/host/lib")
 
     def test_child_qt_paths_are_clean_without_changing_the_parent(self):
-        env = dict(os.environ, QT_PLUGIN_PATH="/host/plugins:" + sys._MEIPASS + "/PySide6/Qt/plugins",
-                   QML2_IMPORT_PATH=sys._MEIPASS + "/PySide6/Qt/qml", QML2_IMPORT_PATH_ORIG="/host/qml")
+        env = dict(os.environ, QT_PLUGIN_PATH="/host/plugins:" + self.bundle + "/PySide6/Qt/plugins",
+                   QML2_IMPORT_PATH=self.bundle + "/PySide6/Qt/qml", QML2_IMPORT_PATH_ORIG="/host/qml")
         with mock.patch.dict(os.environ, env, clear=True):
             original = dict(os.environ)
             hostenv.install()
@@ -172,7 +175,7 @@ class InstallTests(FrozenLinuxTestCase):
         popen, open_url = subprocess.Popen.__init__, QDesktopServices.openUrl
         for frozen, platform in ((False, "linux"), (True, "win32"), (True, "darwin")):
             with self.subTest(frozen=frozen, platform=platform), \
-                    mock.patch.object(sys, "frozen", frozen), mock.patch.object(sys, "platform", platform):
+                    mock.patch.object(hostenv.sys, "frozen", frozen), mock.patch.object(hostenv.sys, "platform", platform):
                 hostenv.install()
                 self.assertIs(subprocess.Popen.__init__, popen)
                 self.assertIs(QDesktopServices.openUrl, open_url)
@@ -182,17 +185,17 @@ class InstallTests(FrozenLinuxTestCase):
         unrelated = {"PATH": os.environ.get("PATH", ""), "HOME": str(SANDBOX / "home"),
                      **{f"XDG_{kind}_HOME": str(SANDBOX / kind.lower())
                         for kind in ("CONFIG", "DATA", "STATE", "CACHE")}}
-        cases = ({"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": "/host/lib"},
-                 {"LD_LIBRARY_PATH": sys._MEIPASS, "LD_LIBRARY_PATH_ORIG": ""},
-                 {"LD_LIBRARY_PATH": sys._MEIPASS},
-                 {"LD_LIBRARY_PATH": sys._MEIPASS + ":/host/lib:/other/lib"},
+        cases = ({"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": "/host/lib"},
+                 {"LD_LIBRARY_PATH": self.bundle, "LD_LIBRARY_PATH_ORIG": ""},
+                 {"LD_LIBRARY_PATH": self.bundle},
+                 {"LD_LIBRARY_PATH": self.bundle + ":/host/lib:/other/lib"},
                  {"LD_LIBRARY_PATH_ORIG": "/host/lib"},
-                 {"QT_PLUGIN_PATH": sys._MEIPASS + "/PySide6/Qt/plugins",
-                  "QML2_IMPORT_PATH": sys._MEIPASS + "/PySide6/Qt/qml"},
-                 {"QT_PLUGIN_PATH": "/host/plugins:" + sys._MEIPASS + "/plugins:/other/plugins",
-                  "QML2_IMPORT_PATH": sys._MEIPASS + "/qml:/host/qml"},
-                 {"QT_PLUGIN_PATH": sys._MEIPASS + "/plugins", "QT_PLUGIN_PATH_ORIG": "/host/plugins",
-                  "QML2_IMPORT_PATH": sys._MEIPASS + "/qml", "QML2_IMPORT_PATH_ORIG": ""},
+                 {"QT_PLUGIN_PATH": self.bundle + "/PySide6/Qt/plugins",
+                  "QML2_IMPORT_PATH": self.bundle + "/PySide6/Qt/qml"},
+                 {"QT_PLUGIN_PATH": "/host/plugins:" + self.bundle + "/plugins:/other/plugins",
+                  "QML2_IMPORT_PATH": self.bundle + "/qml:/host/qml"},
+                 {"QT_PLUGIN_PATH": self.bundle + "/plugins", "QT_PLUGIN_PATH_ORIG": "/host/plugins",
+                  "QML2_IMPORT_PATH": self.bundle + "/qml", "QML2_IMPORT_PATH_ORIG": ""},
                  {"QT_PLUGIN_PATH": "/host/plugins", "QT_PLUGIN_PATH_ORIG": "/other/plugins",
                   "QML2_IMPORT_PATH_ORIG": "/host/qml"}, {})
         with mock.patch.object(QDesktopServices, "openUrl") as underlying:

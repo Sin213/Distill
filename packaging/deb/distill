@@ -1,0 +1,4 @@
+#!/bin/sh
+unset DISTILL_PORTABLE
+export QT_LOGGING_RULES="${QT_LOGGING_RULES:-qt.qpa.*=false}"
+exec /opt/distill/Distill "$@"

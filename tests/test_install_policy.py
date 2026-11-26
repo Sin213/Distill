@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import re
 import tarfile
 import tempfile
@@ -18,7 +19,7 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from tests import helpers  # noqa: F401  (puts the project on sys.path)
+from tests import helpers
 from distill import emulators as em
 from distill import hostenv
 from distill import recomps as rc
@@ -200,8 +201,8 @@ class InstallMethodOrderTests(Linux):
         """The paths module keeps runtime state in XDG directories: an install and the state that records it never land in
         the person's program folder or their configuration."""
         data = self.tmp / "xdg-data"
-        with mock.patch.object(rc, "ROOT", None), mock.patch.object(em.paths, "data_dir", lambda: data), \
-                mock.patch.object(em.paths, "layout", lambda: "xdg"):
+        with mock.patch.object(rc, "sys", mock.Mock(platform="linux")), \
+                mock.patch.object(rc, "ROOT", None), mock.patch.object(em.paths, "data_dir", lambda: data):
             self.assertEqual(rc.root(), data / "recomps")
         self.assertFalse(data.exists())  # resolving a location never creates state
 
@@ -318,19 +319,21 @@ class AppImageInstallTests(Linux):
         e = emu(id="azahar", name="Azahar", exe=r"(^|/)Azahar[^/]*\.AppImage$")
         payload = zip_bytes({"Azahar-2126.2/Azahar.AppImage": b"\x7fELF" + b"\0" * 32,
                              "Azahar-2126.2/README.txt": b"notes"})
-        inst = self.install(e, payload, "Azahar-2126.2-linux-appimage-x86_64.zip", method=em.APPIMAGE_ARCHIVE)
+        with mock.patch.object(rc, "sys", mock.Mock(platform="linux")), helpers.record_chmod() as chmod:
+            inst = self.install(e, payload, "Azahar-2126.2-linux-appimage-x86_64.zip", method=em.APPIMAGE_ARCHIVE)
         self.assertEqual(Path(inst.folder), root / "Azahar")
         target = inst.exe_path()
         self.assertEqual(target.name, "Azahar.AppImage")  # the AppImage in the archive runs, not something beside it
-        self.assertTrue(target.stat().st_mode & 0o111)
+        helpers.assert_executable(self, target, chmod)
         self.assertEqual(inst.exe, "Azahar.AppImage")
 
     def test_an_appimage_inside_a_tar_gz_is_unpacked_and_registered(self):
         e = emu(id="ryujinx", name="Ryujinx", exe=r"(^|/)Ryujinx[^/]*\.AppImage$")
         payload = tar_bytes({"Ryujinx-1.3.3/Ryujinx.AppImage": b"\x7fELF" + b"\0" * 32})
-        inst = self.install(e, payload, "ryujinx-1.3.3-linux_x64-appimage.tar.gz", method=em.APPIMAGE_ARCHIVE)
+        with mock.patch.object(rc, "sys", mock.Mock(platform="linux")), helpers.record_chmod() as chmod:
+            inst = self.install(e, payload, "ryujinx-1.3.3-linux_x64-appimage.tar.gz", method=em.APPIMAGE_ARCHIVE)
         self.assertEqual(inst.exe, "Ryujinx.AppImage")
-        self.assertTrue(inst.exe_path().stat().st_mode & 0o111)
+        helpers.assert_executable(self, inst.exe_path(), chmod)
 
     def test_an_appimage_beside_a_plain_binary_is_the_one_that_runs(self):
         e = emu(id="lichii", name="Lichii")  # no exe pattern: the guess has to prefer the AppImage
@@ -371,20 +374,20 @@ class AppImageLaunchTests(Linux):
         exe = self.tmp / "Azahar.AppImage"
         exe.write_bytes(b"\x7fELF")
         with mock.patch.object(em, "appimage_fuse2", return_value=False):
-            env = em.appimage_env(exe)
-        self.assertEqual(env["APPIMAGE_EXTRACT_AND_RUN"], "1")
+            env = em.appimage_env(exe, {"KEEP": "yes"})
+        self.assertEqual(env, {"KEEP": "yes", "APPIMAGE_EXTRACT_AND_RUN": "1"})
 
     def test_with_fuse2_nothing_is_added(self):
         exe = self.tmp / "Azahar.AppImage"
         exe.write_bytes(b"\x7fELF")
         with mock.patch.object(em, "appimage_fuse2", return_value=True):
-            self.assertIsNone(em.appimage_env(exe))
+            self.assertIsNone(em.appimage_env(exe, {}))
 
     def test_a_plain_program_gets_no_extra_environment(self):
         exe = self.tmp / "pcsx2-qt"
         exe.write_bytes(b"\x7fELF")
         with mock.patch.object(em, "appimage_fuse2", return_value=False):
-            self.assertIsNone(em.appimage_env(exe))
+            self.assertIsNone(em.appimage_env(exe, {}))
 
     def test_the_extra_variable_is_added_and_hostenv_still_cleans_the_environment(self):
         """The AppImage is started through subprocess like any other child, so hostenv still strips the bundle's paths: an
@@ -394,8 +397,7 @@ class AppImageLaunchTests(Linux):
         bundle = "/opt/Distill/_internal"
         with mock.patch.object(em, "appimage_fuse2", return_value=False):
             env = em.appimage_env(exe, {"LD_LIBRARY_PATH": bundle, "LD_LIBRARY_PATH_ORIG": "/usr/lib", "HOME": "/home/someone"})
-        with mock.patch.object(hostenv.sys, "frozen", True, create=True), \
-                mock.patch.object(hostenv.sys, "_MEIPASS", bundle, create=True):
+        with mock.patch.object(hostenv, "sys", mock.Mock(platform="linux", frozen=True, _MEIPASS=bundle)):
             cleaned = hostenv.host_env(env)
         self.assertEqual(cleaned["LD_LIBRARY_PATH"], "/usr/lib")  # the frozen bundle's own libraries are gone again
         self.assertEqual(cleaned["APPIMAGE_EXTRACT_AND_RUN"], "1")  # and what the AppImage needs survives
@@ -408,9 +410,11 @@ class AppImageLaunchTests(Linux):
         self.store.set_installed(rc.Installed("azahar", "2126.2", str(folder), "Azahar.AppImage"))
         e = emu(id="azahar", name="Azahar")
         with mock.patch.object(em, "appimage_fuse2", return_value=False), \
+                mock.patch.dict(os.environ, {"KEEP": "yes"}, clear=True), \
                 mock.patch.object(rc, "launch") as launch:
             em.launch(e, self.store.installed("azahar"))
-        self.assertEqual(launch.call_args.kwargs["env"]["APPIMAGE_EXTRACT_AND_RUN"], "1")
+        launch.assert_called_once_with(self.store.installed("azahar"),
+                                       env={"KEEP": "yes", "APPIMAGE_EXTRACT_AND_RUN": "1"})
 
     def test_an_ordinary_launch_passes_no_environment_at_all(self):
         folder = self.tmp / "PCSX2"
@@ -555,9 +559,15 @@ class NintendoCatalogTests(Linux):
                 folder.mkdir(exist_ok=True)
                 (folder / f"{rid}.AppImage").write_bytes(b"\x7fELF")
                 inst = rc.Installed(rid, "1.0", str(folder), f"{rid}.AppImage")
-                with mock.patch.object(rc, "launch") as launch:
-                    em.launch(e, inst)
-                launch.assert_called_once_with(inst)
+                for fuse2 in (True, False):
+                    with self.subTest(fuse2=fuse2), mock.patch.object(em, "appimage_fuse2", return_value=fuse2), \
+                            mock.patch.dict(os.environ, {"KEEP": "yes"}, clear=True), \
+                            mock.patch.object(rc, "launch") as launch:
+                        em.launch(e, inst)
+                        if fuse2:
+                            launch.assert_called_once_with(inst)
+                        else:
+                            launch.assert_called_once_with(inst, env={"KEEP": "yes", "APPIMAGE_EXTRACT_AND_RUN": "1"})
 
     def test_a_refused_entry_is_still_never_launched(self):
         refused = emu(available=False, notes="Refused: untrusted install kind.", flatpak="org.unrelated.App")

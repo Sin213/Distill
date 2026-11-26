@@ -1,4 +1,4 @@
-# Linux support and AppImage builds
+# Linux support, AppImage and DEB builds
 
 Run from source with Python 3.10+ and the packages listed in `requirements.txt`:
 
@@ -125,6 +125,24 @@ sha256sum Distill-x86_64.AppImage > Distill-x86_64.AppImage.sha256
 
 Run the image's `--self-test` using the scratch XDG environment above and `APPIMAGE_EXTRACT_AND_RUN=1` on systems
 without FUSE. Native Windows validation and full AppImage distribution testing remain separate build checks.
+
+## Building an amd64 DEB
+
+Build the one-folder bundle on amd64 Linux, then package it with `dpkg-deb` without root:
+
+```bash
+pyinstaller --noconfirm distill-linux.spec
+bash packaging/build-deb.sh
+```
+
+The script writes `dist/distill_<version>_amd64.deb` and its `.sha256` sidecar. The Linux workflow uploads both
+as `Distill-DEB`. From `dist/`, run `sudo apt install ./distill_<version>_amd64.deb` with the actual filename
+to install Distill and its Qt runtime dependencies. Launch it from the application menu or with `distill`.
+
+The build sets the minimum glibc version from the highest `GLIBC_` major.minor version found in the staged ELF files,
+with a floor of 2.36 when `GLIBC_ABI_DT_RELR` is present.
+The DEB recommends optional `curl` and `git` packages for **Settings → Tools → hactoolnet → Build**.
+Portable mode needs a writable bundle, such as an extracted AppImage or a source checkout, so the DEB launcher ignores `DISTILL_PORTABLE`.
 
 ## Credits
 

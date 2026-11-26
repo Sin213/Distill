@@ -41,6 +41,9 @@ jobs:
       - name: Build the bundle
         run: pyinstaller --noconfirm distill-linux.spec
 
+      - name: Package the amd64 DEB
+        run: bash packaging/build-deb.sh
+
       - name: Package the AppImage
         run: |
           set -euo pipefail
@@ -75,5 +78,14 @@ jobs:
           path: |
             Distill-x86_64.AppImage
             Distill-x86_64.AppImage.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Distill-DEB
+          path: |
+            dist/distill_*_amd64.deb
+            dist/distill_*_amd64.deb.sha256
           if-no-files-found: error
           retention-days: 30

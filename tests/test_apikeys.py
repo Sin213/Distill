@@ -508,11 +508,9 @@ while not Path({str(go)!r}).exists():
     def test_unreadable_source_is_finalized_untouched_before_any_edit(self):
         old_keys, logins = self.legacy_pair(self.app)
         originals = [old_keys.read_bytes(), logins.read_bytes()]
-        logins.chmod(0)
-        self.addCleanup(logins.chmod, 0o600)
         real_open = os.open
         def enforce_permissions(path, *args, **kwargs):
-            if os.fspath(path) == os.fspath(logins) and not logins.stat().st_mode & stat.S_IRUSR:
+            if os.fspath(path) == os.fspath(logins):
                 raise PermissionError(errno.EACCES, "fixture source is locked")
             return real_open(path, *args, **kwargs)
         with mock.patch.object(os, "open", side_effect=enforce_permissions):
@@ -523,7 +521,6 @@ while not Path({str(go)!r}).exists():
             self.assertIn("will not be imported later", self.keys.problem())
             self.keys.set("ra", "fixture-unrelated")
             self.assertIn("fixture source is locked", self.keys.problem())
-        logins.chmod(0o600)
         self.assertEqual([old_keys.read_bytes(), logins.read_bytes()], originals)
         self.assertEqual(self.keys.logins(), {})
         self.keys = self.load_module()
